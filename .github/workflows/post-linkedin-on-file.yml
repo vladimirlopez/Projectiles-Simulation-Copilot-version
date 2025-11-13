@@ -1,0 +1,38 @@
+name: Post to LinkedIn on commit
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/linkedin/message.txt'
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read message
+        id: readmsg
+        run: |
+          msg=$(cat .github/linkedin/message.txt)
+          url=""
+          if [ -f .github/linkedin/url.txt ]; then url=$(cat .github/linkedin/url.txt); fi
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$msg" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "url=$url" >> $GITHUB_OUTPUT
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Post to LinkedIn
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
+          POST_MESSAGE: ${{ steps.readmsg.outputs.message }}
+          POST_URL: ${{ steps.readmsg.outputs.url }}
+        run: node .github/scripts/post-linkedin.mjs

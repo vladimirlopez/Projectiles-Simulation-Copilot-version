@@ -250,3 +250,13 @@ Notes:
 
 - You need a LinkedIn Developer App with Marketing Developer Platform access and the `w_member_social` permission for OAuth.
 - The workflow uses `.github/scripts/post-linkedin.mjs` to call `POST /v2/ugcPosts`.
+
+### Commit-to-post (no manual click)
+
+Alternatively, commit a message file and the post will be created automatically:
+
+1. Ensure secrets are set (see above).
+2. Create or update `.github/linkedin/message.txt` with your desired text and commit to `main`.
+3. Optional: update the link in `.github/linkedin/url.txt`.
+
+The workflow `.github/workflows/post-linkedin-on-file.yml` will read these files and post.
