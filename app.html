@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion Simulator</title>
+    <link rel="stylesheet" href="src/css/app.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Projectile Motion Simulator</h1>
+            <div class="score-display">
+                <span class="score-label">Score:</span>
+                <span class="score-value" id="totalScore">0</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- LEFT PANEL: Controls -->
+            <aside class="controls-section">
+                <h2>⚙️ Controls</h2>
+                
+                <!-- Step-by-Step Instructions -->
+                <div class="instructions">
+                    <h3>📖 How to Use:</h3>
+                    <ol>
+                        <li>Choose a <strong>projectile type</strong> below</li>
+                        <li>Adjust <strong>parameters</strong> with sliders</li>
+                        <li>Click <strong>Launch</strong> to see the motion</li>
+                        <li>Observe the <strong>two-column analysis</strong> on the right</li>
+                    </ol>
+                </div>
+
+                <!-- Mode Selection -->
+                <div class="mode-selection">
+                    <h3>Step 1: Choose Projectile Type</h3>
+                    <div class="type-buttons">
+                        <button class="type-btn active" data-type="vertical">
+                            <span class="icon">⬆️</span>
+                            <div class="text">
+                                <div>Vertical</div>
+                                <small style="opacity: 0.7;">Throw up or down</small>
+                            </div>
+                        </button>
+                        <button class="type-btn" data-type="horizontal">
+                            <span class="icon">➡️</span>
+                            <div class="text">
+                                <div>Horizontal</div>
+                                <small style="opacity: 0.7;">Launch from height</small>
+                            </div>
+                        </button>
+                        <button class="type-btn" data-type="angled">
+                            <span class="icon">↗️</span>
+                            <div class="text">
+                                <div>Angled</div>
+                                <small style="opacity: 0.7;">Launch at angle</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Parameters -->
+                <div class="parameters">
+                    <h3>Step 2: Set Parameters</h3>
+                    <div class="param-group">
+                        <label>
+                            <span>⚡ Initial Velocity</span>
+                            <span class="value-display" id="v0Display">20 m/s</span>
+                        </label>
+                        <input type="range" id="initialVelocity" min="-50" max="50" value="20" step="0.5" title="Initial velocity (can be negative)">
+                    </div>
+                    <div class="param-group" id="angleGroup" style="display: none;">
+                        <label>
+                            <span>📐 Launch Angle</span>
+                            <span class="value-display" id="angleDisplay">45°</span>
+                        </label>
+                        <input type="range" id="angle" min="0" max="90" value="45" step="1" title="Launch angle">
+                    </div>
+                    <div class="param-group" id="heightGroup">
+                        <label>
+                            <span>🏔️ Launch Height</span>
+                            <span class="value-display" id="h0Display">0 m</span>
+                        </label>
+                        <input type="range" id="initialHeight" min="0" max="50" value="0" step="0.5" title="Initial height">
+                    </div>
+                    <div class="param-group">
+                        <label>
+                            <span>🌍 Gravity</span>
+                            <span class="value-display" id="gDisplay">9.8 m/s²</span>
+                        </label>
+                        <input type="range" id="gravity" min="1" max="20" value="9.8" step="0.1" title="Gravity">
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <!-- Prediction Section -->
+                <div class="param-group" id="predictGroup">
+                    <label><span>📝 Predict:</span></label>
+                    <div class="predict-flex">
+                        <input type="number" id="predictTime" placeholder="Time (s)" class="predict-input" title="Predict time of flight">
+                        <input type="number" id="predictHeight" placeholder="Max Height (m)" class="predict-input height" title="Predict max height">
+                        <input type="number" id="predictRange" placeholder="Range (m)" class="predict-input range" title="Predict range">
+                    </div>
+                    <small>Enter your prediction(s) before launching!</small>
+                </div>
+                <div class="control-buttons">
+                    <button id="launchBtn" class="btn-primary">
+                        <span>🚀</span> Launch
+                    </button>
+                    <button id="pauseBtn" class="btn-secondary" disabled>
+                        <span>⏸️</span> Pause
+                    </button>
+                    <button id="resetBtn" class="btn-secondary">
+                        <span>🔄</span> Reset
+                    </button>
+                </div>
+                <div class="button-row">
+                    <button id="gameRulesBtn" class="viz-btn">📜 Game Rules</button>
+                    <button id="helpBtn" class="viz-btn">❓ Help</button>
+                </div>
+                <div id="resultPanel"></div>
+                    <!-- Modal for Help/Game Rules -->
+                    <div id="modalOverlay" class="modal-overlay hidden">
+                        <div id="modalContent" class="modal-content">
+                            <div class="modal-header">
+                                <div id="modalTabs" class="modal-tabs"></div>
+                                <button id="closeModalBtn" class="close-modal-btn">✖️</button>
+                            </div>
+                            <div id="modalBody"></div>
+                        </div>
+                    </div>
+            </aside>
+
+            <!-- CENTER PANEL: Visualization -->
+            <section class="visualization-section">
+                <h2>📊 Visualization</h2>
+                
+                <div class="viz-controls">
+                    <button class="viz-btn" id="slowMotion">🐌 Slow Motion</button>
+                    <button class="viz-btn active" id="showVectors">📊 Vectors</button>
+                    <button class="viz-btn active" id="showGrid">📐 Grid</button>
+                    <button class="viz-btn active" id="showTrail">🎨 Trail</button>
+                </div>
+
+                <div id="canvasContainer"></div>
+            </section>
+
+            <!-- RIGHT PANEL: Analysis -->
+            <aside class="analysis-section">
+                <h2>📈 Two-Column Analysis</h2>
+                
+                <div class="two-columns">
+                    <!-- Horizontal Column -->
+                    <div class="column horizontal-column">
+                        <h3>➡️ Horizontal (X-axis)</h3>
+                        <div class="equations">
+                            <div class="equation-line">
+                                <span class="label">Motion type:</span>
+                                <span class="value">Uniform (constant v)</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Initial velocity:</span>
+                                <span class="value" id="vx0">v₀ₓ = 0 m/s</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Acceleration:</span>
+                                <span class="value" id="ax">aₓ = 0 m/s²</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Position:</span>
+                                <span class="value" id="xPos">x = v₀ₓ·t</span>
+                            </div>
+                            <div class="equation-line highlight">
+                                <span class="label">Current x:</span>
+                                <span class="value live" id="currentX">0.0 m</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Current vₓ:</span>
+                                <span class="value live" id="currentVx">0.0 m/s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vertical Column -->
+                    <div class="column vertical-column">
+                        <h3>⬆️ Vertical (Y-axis)</h3>
+                        <div class="equations">
+                            <div class="equation-line">
+                                <span class="label">Motion type:</span>
+                                <span class="value">Accelerated (gravity)</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Initial velocity:</span>
+                                <span class="value" id="vy0">v₀ᵧ = 20 m/s</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Acceleration:</span>
+                                <span class="value" id="ay">aᵧ = -9.8 m/s²</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Position:</span>
+                                <span class="value" id="yPos">y = v₀ᵧ·t - ½g·t²</span>
+                            </div>
+                            <div class="equation-line highlight">
+                                <span class="label">Current y:</span>
+                                <span class="value live" id="currentY">0.0 m</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Current vᵧ:</span>
+                                <span class="value live" id="currentVy">0.0 m/s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="results">
+                    <h3>📋 Calculated Results</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">⏱️ Time of Flight:</span>
+                            <span class="value" id="timeOfFlight">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">🏔️ Max Height:</span>
+                            <span class="value" id="maxHeight">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">📏 Range:</span>
+                            <span class="value" id="range">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">⏲️ Current Time:</span>
+                            <span class="value" id="currentTime">0.00 s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="help-section">
+                    <h3>💡 Tips for Current Mode</h3>
+                    <div class="help-content">
+                        <ul id="tipsList">
+                            <li>Vertical projectiles have no horizontal motion (vₓ = 0)</li>
+                            <li>Time to go up equals time to come down</li>
+                            <li>Maximum height occurs when vᵧ = 0</li>
+                            <li>Try different velocities to see how height changes</li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer>
+            <div class="stats-section">
+                <div class="stat-item">
+                    <span class="stat-label">🚀 Launches:</span>
+                    <span class="stat-value" id="launchCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">✨ Modes Completed:</span>
+                    <span class="stat-value" id="modesCompleted">0/3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🎯 Learning Progress:</span>
+                    <span class="stat-value" id="bestAccuracy">Getting Started</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- p5.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+
+    <!-- Visualization (p5.js sketch, must load after p5.js) -->
+    <script src="src/js/visualization.js"></script>
+
+    <!-- Main Application (must be a module, loads last) -->
+    <script type="module" src="src/js/main.js"></script>
+
+    <!-- DEBUG TEST: Remove after debugging -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded');
+        console.log('Type buttons:', document.querySelectorAll('.type-btn'));
+        console.log('Launch button:', document.getElementById('launchBtn'));
+      });
+    </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion Lab - Two Columns Method</title>
+    <link rel="stylesheet" href="src/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Projectile Motion Lab</h1>
+            <p class="subtitle">Master physics with the Two Columns Method</p>
+            <div class="score-display">
+                <span class="score-label">Score:</span>
+                <span class="score-value" id="totalScore">0</span>
+                <span class="score-icon">⭐</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="controls-section">
+                <h2>Select Mode</h2>
+                <div class="projectile-types">
+                    <button class="type-btn active" data-type="vertical" title="Learn about vertical motion and gravity">
+                        <span class="icon">⬆️</span>
+                        <span class="text">Vertical</span>
+                    </button>
+                    <button class="type-btn" data-type="horizontal" title="Explore horizontal projectile motion">
+                        <span class="icon">➡️</span>
+                        <span class="text">Horizontal</span>
+                    </button>
+                    <button class="type-btn" data-type="angled" title="Master angled projectiles">
+                        <span class="icon">↗️</span>
+                        <span class="text">Angled</span>
+                    </button>
+                </div>
+
+                <div class="parameters">
+                    <h3>Launch Parameters</h3>
+                    <div class="param-group">
+                        <label for="initialVelocity">
+                            <span class="param-icon">🎯</span>
+                            Initial Velocity (v₀):
+                        </label>
+                        <input type="range" id="initialVelocity" min="5" max="50" value="20" step="0.5">
+                        <span class="value" id="velocityValue">20 m/s</span>
+                    </div>
+
+                    <div class="param-group hidden" id="angleGroup">
+                        <label for="angle">
+                            <span class="param-icon">📐</span>
+                            Launch Angle (θ):
+                        </label>
+                        <input type="range" id="angle" min="0" max="90" value="45" step="1">
+                        <span class="value" id="angleValue">45°</span>
+                    </div>
+
+                    <div class="param-group hidden" id="heightGroup">
+                        <label for="initialHeight">
+                            <span class="param-icon">🏔️</span>
+                            Initial Height (h₀):
+                        </label>
+                        <input type="range" id="initialHeight" min="0" max="50" value="20" step="1">
+                        <span class="value" id="heightValue">20 m</span>
+                    </div>
+
+                    <div class="param-group">
+                        <label for="gravity">
+                            <span class="param-icon">🌍</span>
+                            Gravity (g):
+                        </label>
+                        <input type="range" id="gravity" min="9" max="11" value="9.8" step="0.1">
+                        <span class="value" id="gravityValue">9.8 m/s²</span>
+                    </div>
+                </div>
+
+                <div class="controls-buttons">
+                    <button id="launchBtn" class="btn-primary">
+                        <span class="btn-icon">🚀</span>
+                        Launch
+                    </button>
+                    <button id="resetBtn" class="btn-secondary">
+                        <span class="btn-icon">🔄</span>
+                        Reset
+                    </button>
+                    <button id="pauseBtn" class="btn-secondary" disabled>
+                        <span class="btn-icon">⏸️</span>
+                        Pause
+                    </button>
+                </div>
+
+                <div class="help-section">
+                    <button id="toggleHelp" class="btn-help">💡 Show Tips</button>
+                    <div id="helpContent" class="help-content hidden">
+                        <h4>Quick Tips:</h4>
+                        <ul id="tipsList"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization-section">
+                <div id="canvasContainer"></div>
+                <div class="visualization-controls">
+                    <button id="slowMotion" class="viz-btn" title="Toggle slow motion">
+                        <span>🐢</span> Slow Motion
+                    </button>
+                    <button id="showVectors" class="viz-btn active" title="Toggle velocity vectors">
+                        <span>➡️</span> Vectors
+                    </button>
+                    <button id="showGrid" class="viz-btn active" title="Toggle grid">
+                        <span>⊞</span> Grid
+                    </button>
+                    <button id="showTrail" class="viz-btn active" title="Toggle trajectory trail">
+                        <span>━</span> Trail
+                    </button>
+                </div>
+            </div>
+
+            <div class="analysis-section">
+                <h2>Two Columns Analysis</h2>
+                <div class="two-columns">
+                    <div class="column horizontal-column">
+                        <h3>
+                            <span class="column-icon">➡️</span>
+                            Horizontal (x) Component
+                        </h3>
+                        <div class="equations">
+                            <div class="equation-line">
+                                <span class="label">Initial velocity:</span>
+                                <span class="value" id="vx0">v₀ₓ = 0 m/s</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Acceleration:</span>
+                                <span class="value">aₓ = 0 m/s²</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Position:</span>
+                                <span class="value" id="xPos">x = v₀ₓ · t</span>
+                            </div>
+                            <div class="equation-line highlight">
+                                <span class="label">Current x:</span>
+                                <span class="value live" id="currentX">0.0 m</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Current vₓ:</span>
+                                <span class="value live" id="currentVx">0.0 m/s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="column vertical-column">
+                        <h3>
+                            <span class="column-icon">⬆️</span>
+                            Vertical (y) Component
+                        </h3>
+                        <div class="equations">
+                            <div class="equation-line">
+                                <span class="label">Initial velocity:</span>
+                                <span class="value" id="vy0">v₀ᵧ = 20 m/s</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Acceleration:</span>
+                                <span class="value" id="ay">aᵧ = -9.8 m/s²</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Position:</span>
+                                <span class="value" id="yPos">y = v₀ᵧ·t - ½g·t²</span>
+                            </div>
+                            <div class="equation-line highlight">
+                                <span class="label">Current y:</span>
+                                <span class="value live" id="currentY">0.0 m</span>
+                            </div>
+                            <div class="equation-line">
+                                <span class="label">Current vᵧ:</span>
+                                <span class="value live" id="currentVy">0.0 m/s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results">
+                    <h3>📊 Results</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">⏱️ Time of Flight:</span>
+                            <span class="value" id="timeOfFlight">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">🏔️ Max Height:</span>
+                            <span class="value" id="maxHeight">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">📏 Range:</span>
+                            <span class="value" id="range">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">⏲️ Current Time:</span>
+                            <span class="value" id="currentTime">0.00 s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="stats-section">
+                <div class="stat-item">
+                    <span class="stat-label">🚀 Total Launches:</span>
+                    <span class="stat-value" id="launchCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">✨ Completed Modes:</span>
+                    <span class="stat-value" id="modesCompleted">0/3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🎯 Best Accuracy:</span>
+                    <span class="stat-value" id="bestAccuracy">—</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- p5.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    
+    <!-- Visualization (p5.js sketch) -->
+    <script src="src/js/visualization.js"></script>
+    
+    <!-- Main Application -->
+    <script type="module" src="src/js/main.js"></script>
+</body>
+</html>
