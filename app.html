@@ -7,14 +7,20 @@
     <link rel="stylesheet" href="src/css/app.css">
 </head>
 <body>
+    <!-- Top Header with attribution and help -->
+    <header class="app-header">
+        <div class="header-left">
+            <h1>🚀 Projectile Motion Simulator</h1>
+            <p class="author">By Vladimir Lopez | <a href="https://vladimirlopez.org" target="_blank" rel="noopener">vladimirlopez.org</a></p>
+        </div>
+        <div class="header-right">
+            <button id="gameRulesBtn" class="header-btn">📜 Game Rules</button>
+            <button id="helpBtn" class="header-btn">❓ Help & Examples</button>
+            <div class="score-badge">Score: <span id="headerScore">0</span></div>
+        </div>
+    </header>
+
     <div class="container">
-        <header>
-            <h1>🎯 Projectile Motion Simulator</h1>
-            <div class="score-display">
-                <span class="score-label">Score:</span>
-                <span class="score-value" id="totalScore">0</span>
-            </div>
-        </header>
 
         <main>
             <!-- LEFT PANEL: Controls -->
@@ -115,12 +121,7 @@
                         <span>🔄</span> Reset
                     </button>
                 </div>
-                <div class="button-row">
-                    <button id="gameRulesBtn" class="viz-btn">📜 Game Rules</button>
-                    <button id="helpBtn" class="viz-btn">❓ Help</button>
-                </div>
                 <div id="resultPanel"></div>
-                    <!-- Modal for Help/Game Rules -->
                     <div id="modalOverlay" class="modal-overlay hidden">
                         <div id="modalContent" class="modal-content">
                             <div class="modal-header">
@@ -268,6 +269,23 @@
                 </div>
             </div>
         </footer>
+    </div>
+
+    <!-- App Footer with copyright -->
+    <footer class="app-footer">
+        <p>&copy; 2025 Vladimir Lopez. Licensed under the MIT License. 
+        <a href="https://github.com/vladimirlopez/Projectiles-Simulation-Copilot-version" target="_blank" rel="noopener">View on GitHub</a></p>
+    </footer>
+
+    <!-- Modal for Help/Game Rules -->
+    <div id="modalOverlay" class="modal-overlay hidden">
+        <div id="modalContent" class="modal-content">
+            <div class="modal-header">
+                <div id="modalTabs" class="modal-tabs"></div>
+                <button id="closeModalBtn" class="close-modal-btn">✖️</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
     </div>
 
     <!-- p5.js Library -->

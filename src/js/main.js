@@ -409,6 +409,9 @@ document.addEventListener('DOMContentLoaded', () => {
         score += pts;
         msg += `<br><b>Total Score: ${score}</b>`;
         if (resultPanel) resultPanel.innerHTML = msg;
+        // Update header score
+        const headerScore = document.getElementById('headerScore');
+        if (headerScore) headerScore.textContent = score;
     }
 
     // After launch, show prediction results

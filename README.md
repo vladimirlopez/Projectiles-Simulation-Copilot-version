@@ -186,7 +186,9 @@ See `/doc/DESIGN_PLAN.md` for comprehensive design documentation including:
 
 ## 📄 License
 
-Created for educational purposes. Free to use and modify for classroom instruction.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 Vladimir Lopez
 
 ## 🙏 Acknowledgments
 
@@ -198,5 +200,6 @@ Created for educational purposes. Free to use and modify for classroom instructi
 ---
 
 **Built with:** HTML5, CSS3, JavaScript ES6, p5.js  
-**Author:** Vladimir Lopez  
-**Purpose:** Physics Education - Projectile Motion
+**Author:** Vladimir Lopez | [vladimirlopez.org](https://vladimirlopez.org)  
+**Purpose:** Physics Education - Projectile Motion  
+**Repository:** [GitHub](https://github.com/vladimirlopez/Projectiles-Simulation-Copilot-version)
