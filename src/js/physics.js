@@ -50,16 +50,19 @@ export class ProjectilePhysics {
      * Calculate time of flight for vertical projectile
      * Launched upward from ground: t = 2 * v0 / g
      */
-    getVerticalTimeOfFlight(v0) {
-        return (2 * v0) / this.g;
+    getVerticalTimeOfFlight(v0, h0 = 0) {
+        const disc = v0 * v0 + 2 * this.g * h0;
+        if (disc < 0) return 0;
+        return (v0 + Math.sqrt(disc)) / this.g;
     }
 
     /**
      * Calculate maximum height for vertical projectile
      * h_max = v0² / (2g)
      */
-    getVerticalMaxHeight(v0) {
-        return (v0 * v0) / (2 * this.g);
+    getVerticalMaxHeight(v0, h0 = 0) {
+        if (v0 > 0) return h0 + (v0 * v0) / (2 * this.g);
+        return h0;
     }
 
     /**
@@ -127,7 +130,7 @@ export class ProjectilePhysics {
                 v0x = 0;
                 v0y = v0;
                 x = 0;
-                y = this.getYPosition(0, v0y, t);
+                y = this.getYPosition(h0 || 0, v0y, t);
                 vx = 0;
                 vy = this.getYVelocity(v0y, t);
                 break;
@@ -168,8 +171,8 @@ export class ProjectilePhysics {
             case 'vertical':
                 v0x = 0;
                 v0y = v0;
-                timeOfFlight = this.getVerticalTimeOfFlight(v0);
-                maxHeight = this.getVerticalMaxHeight(v0);
+                timeOfFlight = this.getVerticalTimeOfFlight(v0, h0 || 0);
+                maxHeight = this.getVerticalMaxHeight(v0, h0 || 0);
                 range = 0;
                 break;
 
@@ -199,7 +202,7 @@ export class ProjectilePhysics {
             timeOfFlight,
             maxHeight,
             range,
-            timeToMaxHeight: this.getTimeToMaxHeight(v0y)
+            timeToMaxHeight: Math.max(0, this.getTimeToMaxHeight(v0y))
         };
     }
 }

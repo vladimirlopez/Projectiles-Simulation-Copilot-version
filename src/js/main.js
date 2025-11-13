@@ -26,47 +26,93 @@ const MODAL_CONTENT = {
     `,
     vertical: `
         <h2>Vertical Projectile</h2>
-        <p>Object is launched straight up or down from a height.</p>
-        <b>Equations:</b>
+        <p>Analyze with displacements (Δ) and the position and velocity graphs.</p>
+        <b>Process (Two Columns Thinking):</b>
         <ul>
-            <li>y(t) = h₀ + v₀·t - ½gt²</li>
-            <li>Time to hit ground: solve y(t) = 0</li>
-            <li>Max height: h₀ + (v₀²)/(2g) (if v₀ &gt; 0)</li>
+            <li>Vertical position model: y(t) = h₀ + v₀·t − ½ g t²</li>
+            <li>Landing time (tₙ): set y = 0 and solve the quadratic (show your algebra)</li>
+            <li>Top of the path: vᵧ = 0 → vertical displacement Δy = v₀²/(2g); so H<sub>max</sub> = h₀ + Δy (if v₀ &gt; 0)</li>
+            <li>Focus on “what changes”: Δy and Δvᵧ, not memorized results</li>
         </ul>
-        <b>Example:</b><br>
-        Launch from 10 m up, v₀ = -5 m/s (down):<br>
-        <code>y(t) = 10 - 5t - 4.9t²</code>
+        <b>Example Setup:</b><br>
+        From h₀ = 10 m, v₀ = −5 m/s (down): write y(t) = 10 − 5t − 4.9 t², then solve y=0 for t.
     `,
     horizontal: `
         <h2>Horizontal Projectile</h2>
-        <p>Object is launched horizontally from a height.</p>
-        <b>Equations:</b>
+        <p>Separate the motions: constant v in x, accelerated in y.</p>
+        <b>Process (Displacements First):</b>
         <ul>
-            <li>x(t) = v₀·t</li>
-            <li>y(t) = h₀ - ½gt²</li>
-            <li>Time to hit ground: t = sqrt(2h₀/g)</li>
-            <li>Range: x = v₀·t</li>
+            <li>Horizontal: Δx = v₀·t (vₓ is constant)</li>
+            <li>Vertical: y(t) = h₀ − ½ g t² (v₀ᵧ = 0)</li>
+            <li>Find flight time by setting y = 0 and solving for t</li>
+            <li>Then compute range with Δx = v₀·t</li>
         </ul>
-        <b>Example:</b><br>
-        Launch from 20 m, v₀ = 10 m/s:<br>
-        <code>t = sqrt(40/9.8) ≈ 2.02 s, Range ≈ 20.2 m</code>
+        <b>Example Flow:</b><br>
+        From h₀ = 20 m: solve 0 = 20 − ½ g t² → get t, then Δx = v₀·t.
     `,
     angled: `
         <h2>Angled Projectile</h2>
-        <p>Object is launched at an angle from a height.</p>
-        <b>Equations:</b>
+        <p>Resolve v₀ into components and use the same displacement logic.</p>
+        <b>Process (Step-by-Step):</b>
         <ul>
-            <li>x(t) = v₀·cosθ·t</li>
-            <li>y(t) = h₀ + v₀·sinθ·t - ½gt²</li>
-            <li>Time to hit ground: solve y(t) = 0</li>
-            <li>Max height: h₀ + (v₀·sinθ)²/(2g)</li>
-            <li>Range: x at y=0</li>
+            <li>Resolve: v₀x = v₀ cosθ, v₀y = v₀ sinθ</li>
+            <li>Horizontal: Δx = v₀x·t</li>
+            <li>Vertical: y(t) = h₀ + v₀y·t − ½ g t²</li>
+            <li>Landing time: set y = 0 and solve (show the quadratic steps)</li>
+            <li>Top: vᵧ = 0 → Δy = v₀y²/(2g); H<sub>max</sub> = h₀ + Δy</li>
         </ul>
-        <b>Example:</b><br>
-        Launch from 5 m, v₀ = 15 m/s, θ = 30°:<br>
-        <code>v₀y = 7.5 m/s, Max height ≈ 7.87 m</code>
+        <b>Example Flow:</b><br>
+        From h₀ = 5 m, v₀ = 15 m/s, θ = 30°: compute v₀x, v₀y → solve y=0 for t → range via Δx.
     `
 };
+
+// Generate algebra steps dynamically for current parameters
+function generateStepsContent(app) {
+    const type = app.state.projectileType;
+    const { v0, angle, h0, g } = app.state.parameters;
+    let v0x = 0, v0y = 0;
+    if (type === 'horizontal') v0x = v0;
+    if (type === 'vertical') v0y = v0;
+    if (type === 'angled') {
+        v0x = v0 * Math.cos(angle * Math.PI/180);
+        v0y = v0 * Math.sin(angle * Math.PI/180);
+    }
+    // Quadratic form: y(t) = h0 + v0y t - 1/2 g t^2; landing: y=0
+    // Standard form: a t^2 + b t + c = 0 with a = -1/2 g, b = v0y, c = h0
+    const a = -0.5 * g;
+    const b = v0y;
+    const c = h0;
+    const disc = b*b - 4*a*c;
+    const tPos = disc >= 0 ? (-b + Math.sqrt(disc)) / (2*a) : 0;
+    const lines = [
+        `<h2>Algebra Steps (${type.charAt(0).toUpperCase()+type.slice(1)})</h2>`,
+        '<b>Goal:</b> Find landing time by solving position model for y=0.',
+        '<b>1.</b> Start with displacement model:',
+        `y(t) = ${h0.toFixed(2)} + ${v0y.toFixed(2)}·t − ½·${g.toFixed(2)}·t²`,
+        '<b>2.</b> Set y = 0 at landing:',
+        `0 = ${h0.toFixed(2)} + ${v0y.toFixed(2)}·t − ½·${g.toFixed(2)}·t²`,
+        '<b>3.</b> Rearrange into quadratic form a t² + b t + c = 0:',
+        `(-½·${g.toFixed(2)}) t² + (${v0y.toFixed(2)}) t + (${h0.toFixed(2)}) = 0`,
+        `<b>4.</b> Identify coefficients: a = ${a.toFixed(3)}, b = ${b.toFixed(3)}, c = ${c.toFixed(3)}`,
+        '<b>5.</b> Quadratic formula: t = [-b ± √(b² - 4ac)] / (2a)',
+        `<b>6.</b> Discriminant: b² - 4ac = ${(disc).toFixed(3)}`,
+        '<b>7.</b> Keep the positive time solution:',
+        `t = ${tPos.toFixed(4)} s`,
+    ];
+    if (type !== 'vertical') {
+        lines.push('<b>8.</b> Horizontal displacement (range): Δx = v₀x · t');
+        lines.push(`v₀x = ${v0x.toFixed(3)} m/s → Range ≈ ${(v0x * tPos).toFixed(3)} m`);
+    } else {
+        // Vertical additional: max height if upward
+        if (v0y > 0) {
+            const hMax = h0 + (v0y*v0y)/(2*g);
+            lines.push('<b>8.</b> Maximum height from vᵧ=0 at top:');
+            lines.push(`Hmax = h₀ + v₀²/(2g) = ${hMax.toFixed(3)} m`);
+        }
+    }
+    lines.push('<hr><em>Show these steps in your notebook—do not skip the reasoning.</em>');
+    return lines.map(l => `<div class="step-line">${l}</div>`).join('');
+}
 
 class ProjectileApp {
     constructor() {
@@ -241,6 +287,25 @@ class ProjectileApp {
             this.state.currentTime
         );
 
+        // Check if projectile has landed (or exceeded planned flight time)
+        const tFlight = this.state.results.timeOfFlight ?? Infinity;
+        if (currentState.y < 0 || this.state.currentTime >= tFlight) {
+            // Snap to exact landing time/state and clamp y=0
+            const tLand = isFinite(tFlight) ? tFlight : this.state.currentTime;
+            const finalState = this.physics.getStateAtTime(
+                params.type,
+                this.state.parameters,
+                tLand
+            );
+            const clampedState = { ...finalState, y: 0 };
+            this.state.currentTime = tLand;
+            this.state.trajectory.push({ x: clampedState.x, y: 0, t: tLand });
+            this.ui.updateTwoColumns(clampedState, this.state.results);
+            this.ui.updateCurrentTime(tLand);
+            this.land();
+            return;
+        }
+
         // Store trajectory point
         this.state.trajectory.push({
             x: currentState.x,
@@ -251,12 +316,6 @@ class ProjectileApp {
         // Update displays
         this.ui.updateTwoColumns(currentState, this.state.results);
         this.ui.updateCurrentTime(this.state.currentTime);
-
-        // Check if projectile has landed
-        if (currentState.y < 0 || this.state.currentTime > this.state.results.timeOfFlight + 0.1) {
-            this.land();
-            return;
-        }
 
         // Continue animation
         requestAnimationFrame(() => this.animate());
@@ -340,6 +399,20 @@ class ProjectileApp {
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Enable compact layout when embedded in LMS (app.html?embed=1)
+    try {
+        const q = new URLSearchParams(window.location.search);
+        if (q.has('embed') && q.get('embed') !== '0' && q.get('embed') !== 'false') {
+            document.body.classList.add('embed');
+        }
+    } catch (_) { /* no-op */ }
+    // Enable compact embed mode if query contains ?embed=1
+    try {
+        const qp = new URLSearchParams(window.location.search);
+        if (qp.has('embed')) {
+            document.body.classList.add('embed');
+        }
+    } catch {}
     window.projectileApp = new ProjectileApp();
     window.getAppState = () => window.projectileApp.getState();
 
@@ -355,7 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
             {id:'rules', label:'Game Rules'},
             {id:'vertical', label:'Vertical'},
             {id:'horizontal', label:'Horizontal'},
-            {id:'angled', label:'Angled'}
+            {id:'angled', label:'Angled'},
+            {id:'steps', label:'Algebra Steps'}
         ];
         modalTabs.innerHTML = '';
         tabs.forEach(tab => {
@@ -365,7 +439,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.onclick = () => showModal(tab.id);
             modalTabs.appendChild(btn);
         });
-        modalBody.innerHTML = MODAL_CONTENT[type] || '';
+        if (type === 'steps') {
+            modalBody.innerHTML = generateStepsContent(app);
+        } else {
+            modalBody.innerHTML = MODAL_CONTENT[type] || '';
+        }
     }
     document.getElementById('gameRulesBtn').onclick = () => showModal('rules');
     document.getElementById('helpBtn').onclick = () => showModal('vertical');

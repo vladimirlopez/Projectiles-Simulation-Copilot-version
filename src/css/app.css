@@ -88,6 +88,26 @@
     text-decoration: underline;
 }
 
+/* Embed mode (for LMS iframes) */
+body.embed {
+    overflow-y: auto;
+}
+body.embed .app-footer {
+    display: none;
+}
+body.embed .container {
+    padding: 8px;
+    gap: 8px;
+}
+body.embed main {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px 10px;
+}
+body.embed .instructions { display: none; }
+body.embed .viz-controls { margin-bottom: 6px; }
+body.embed #canvasContainer { height: 380px; }
+
 /* Result Panel for prediction/game feedback */
 #resultPanel {
     margin-top: 12px;
@@ -239,8 +259,29 @@ main {
     gap: 12px;
     padding: 12px 16px;
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
 }
+
+/* Embed mode: tighter spacing and smaller columns */
+body.embed main {
+    grid-template-columns: 260px 1fr 300px;
+    gap: 8px;
+    padding: 8px 10px;
+}
+
+body.embed .app-header {
+    padding: 8px 12px;
+}
+
+body.embed .header-left h1 { font-size: 1.1rem; }
+body.embed .header-left .author { font-size: 0.78rem; }
+body.embed .header-btn { padding: 6px 10px; font-size: 0.85rem; }
+body.embed .score-badge { padding: 6px 10px; font-size: 0.85rem; }
+
+/* Panel spacing reductions */
+body.embed .instructions { padding: 8px; margin-bottom: 8px; }
+body.embed .mode-selection { margin-bottom: 10px; }
+body.embed .param-group { margin-bottom: 8px; }
 
 /* Left Panel - Controls */
 .controls-section {

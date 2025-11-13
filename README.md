@@ -6,6 +6,27 @@ Live at: [https://vladimirlopez.github.io/Projectiles-Simulation-Copilot-version
 
 An educational web-based simulation for teaching projectile motion physics using the **two-columns method** (separate horizontal and vertical components).
 
+## Embed in LMS (Canvas)
+
+- Use the compact embed layout by adding `?embed=1` to the app URL.
+- Recommended iframe for Canvas Pages:
+
+```html
+<iframe
+    src="https://vladimirlopez.github.io/Projectiles-Simulation-Copilot-version/app.html?embed=1"
+    width="100%"
+    height="820"
+    style="border:0;"
+    loading="lazy"
+    allowfullscreen
+></iframe>
+```
+
+- Notes:
+    - Link directly to `app.html?embed=1` (not the index redirect) so the parameter is preserved.
+    - Adjust `height` for your Canvas theme; 760–880px typically works.
+    - Embed mode hides long instructions and the footer to avoid clipping; layout padding and canvas height are reduced for a tighter fit.
+
 ## 🎯 Features
 
 
