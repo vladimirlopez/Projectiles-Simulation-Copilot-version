@@ -321,35 +321,106 @@ function drawArrow(x1, y1, x2, y2, label) {
 }
 
 function drawHUD(state) {
-    // Draw HUD in top-right corner
-    fill(56, 62, 69, 240);
+    // Comprehensive info panel in top-right with two-columns analysis
+    const panelWidth = 280;
+    const panelX = canvasWidth - panelWidth - 10;
+    const panelY = 10;
+    
+    // Semi-transparent background
+    fill(56, 62, 69, 235);
     stroke(95, 103, 112);
     strokeWeight(1);
-    rect(canvasWidth - 180, 10, 170, 80, 8);
+    rect(panelX, panelY, panelWidth, canvasHeight - 20, 8);
     
     fill(224, 224, 224);
     noStroke();
-    textSize(11);
+    textSize(10);
     textAlign(LEFT, TOP);
     
-    const hudX = canvasWidth - 170;
-    let hudY = 20;
+    let y = panelY + 12;
+    const leftCol = panelX + 10;
+    const rightCol = panelX + panelWidth / 2 + 5;
     
-    text(`Time: ${state.currentTime.toFixed(2)} s`, hudX, hudY);
-    hudY += 18;
+    // Title
+    textSize(12);
+    fill(0, 188, 212);
+    text('📊 Two-Column Analysis', leftCol, y);
+    y += 22;
     
-    const params = state.parameters;
-    text(`v₀: ${params.v0.toFixed(1)} m/s`, hudX, hudY);
-    hudY += 18;
+    // Current time
+    textSize(10);
+    fill(224, 224, 224);
+    text(`⏲️ Time: ${state.currentTime.toFixed(2)} s`, leftCol, y);
+    y += 18;
     
-    if (state.projectileType === 'angled') {
-        text(`Angle: ${params.angle.toFixed(0)}°`, hudX, hudY);
-        hudY += 18;
-    }
+    // Horizontal column
+    textSize(11);
+    fill(0, 188, 212);
+    text('🔵 Horizontal (x)', leftCol, y);
+    y += 16;
     
-    if (params.h0 > 0) {
-        text(`Height: ${params.h0.toFixed(1)} m`, hudX, hudY);
-    }
+    textSize(9);
+    fill(176, 176, 176);
+    const results = state.results || {};
+    const v0x = results.v0x || 0;
+    text(`v₀ₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
+    y += 14;
+    text(`aₓ: 0 m/s²`, leftCol, y);
+    y += 14;
+    
+    const trajectory = state.trajectory || [];
+    const current = trajectory.length > 0 ? trajectory[trajectory.length - 1] : {x: 0, y: 0};
+    fill(255, 215, 0);
+    text(`x: ${current.x.toFixed(2)} m`, leftCol, y);
+    y += 14;
+    text(`vₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
+    y += 20;
+    
+    // Vertical column
+    textSize(11);
+    fill(255, 107, 107);
+    text('🔴 Vertical (y)', leftCol, y);
+    y += 16;
+    
+    textSize(9);
+    fill(176, 176, 176);
+    const v0y = results.v0y || 0;
+    const g = state.parameters.g || 9.8;
+    text(`v₀ᵧ: ${v0y.toFixed(2)} m/s`, leftCol, y);
+    y += 14;
+    text(`aᵧ: -${g.toFixed(1)} m/s²`, leftCol, y);
+    y += 14;
+    
+    fill(255, 215, 0);
+    text(`y: ${current.y.toFixed(2)} m`, leftCol, y);
+    y += 14;
+    const vy = v0y - g * state.currentTime;
+    text(`vᵧ: ${vy.toFixed(2)} m/s`, leftCol, y);
+    y += 20;
+    
+    // Results section
+    textSize(11);
+    fill(0, 188, 212);
+    text('📋 Results', leftCol, y);
+    y += 16;
+    
+    textSize(9);
+    fill(176, 176, 176);
+    text('Time of Flight:', leftCol, y);
+    fill(224, 224, 224);
+    text(results.timeOfFlight ? `${results.timeOfFlight.toFixed(2)} s` : '—', rightCol, y);
+    y += 14;
+    
+    fill(176, 176, 176);
+    text('Max Height:', leftCol, y);
+    fill(224, 224, 224);
+    text(results.maxHeight ? `${results.maxHeight.toFixed(2)} m` : '—', rightCol, y);
+    y += 14;
+    
+    fill(176, 176, 176);
+    text('Range:', leftCol, y);
+    fill(224, 224, 224);
+    text(results.range ? `${results.range.toFixed(2)} m` : '—', rightCol, y);
 }
 
 function windowResized() {

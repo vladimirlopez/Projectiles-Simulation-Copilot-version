@@ -147,100 +147,13 @@
                 <div id="canvasContainer"></div>
             </section>
 
-            <!-- RIGHT PANEL: Analysis -->
+            <!-- RIGHT PANEL: Tips (Analysis now in canvas) -->
             <aside class="analysis-section">
-                <h2>📈 Two-Column Analysis</h2>
+                <h2>💡 Tips</h2>
                 
-                <div class="two-columns">
-                    <!-- Horizontal Column -->
-                    <div class="column horizontal-column">
-                        <h3>➡️ Horizontal (X-axis)</h3>
-                        <div class="equations">
-                            <div class="equation-line">
-                                <span class="label">Motion type:</span>
-                                <span class="value">Uniform (constant v)</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Initial velocity:</span>
-                                <span class="value" id="vx0">v₀ₓ = 0 m/s</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Acceleration:</span>
-                                <span class="value" id="ax">aₓ = 0 m/s²</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Position:</span>
-                                <span class="value" id="xPos">x = v₀ₓ·t</span>
-                            </div>
-                            <div class="equation-line highlight">
-                                <span class="label">Current x:</span>
-                                <span class="value live" id="currentX">0.0 m</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Current vₓ:</span>
-                                <span class="value live" id="currentVx">0.0 m/s</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Vertical Column -->
-                    <div class="column vertical-column">
-                        <h3>⬆️ Vertical (Y-axis)</h3>
-                        <div class="equations">
-                            <div class="equation-line">
-                                <span class="label">Motion type:</span>
-                                <span class="value">Accelerated (gravity)</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Initial velocity:</span>
-                                <span class="value" id="vy0">v₀ᵧ = 20 m/s</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Acceleration:</span>
-                                <span class="value" id="ay">aᵧ = -9.8 m/s²</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Position:</span>
-                                <span class="value" id="yPos">y = v₀ᵧ·t - ½g·t²</span>
-                            </div>
-                            <div class="equation-line highlight">
-                                <span class="label">Current y:</span>
-                                <span class="value live" id="currentY">0.0 m</span>
-                            </div>
-                            <div class="equation-line">
-                                <span class="label">Current vᵧ:</span>
-                                <span class="value live" id="currentVy">0.0 m/s</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Results -->
-                <div class="results">
-                    <h3>📋 Calculated Results</h3>
-                    <div class="result-grid">
-                        <div class="result-item">
-                            <span class="label">⏱️ Time of Flight:</span>
-                            <span class="value" id="timeOfFlight">—</span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">🏔️ Max Height:</span>
-                            <span class="value" id="maxHeight">—</span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">📏 Range:</span>
-                            <span class="value" id="range">—</span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">⏲️ Current Time:</span>
-                            <span class="value" id="currentTime">0.00 s</span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Help Section -->
                 <div class="help-section">
-                    <h3>💡 Tips for Current Mode</h3>
+                    <h3>Current Mode Tips</h3>
                     <div class="help-content">
                         <ul id="tipsList">
                             <li>Vertical projectiles have no horizontal motion (vₓ = 0)</li>
@@ -250,6 +163,10 @@
                         </ul>
                     </div>
                 </div>
+                
+                <p style="margin-top: 16px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                    📊 <strong>Two-Column Analysis</strong> and <strong>Results</strong> are displayed in the simulation canvas (top-right panel).
+                </p>
             </aside>
         </main>
 
