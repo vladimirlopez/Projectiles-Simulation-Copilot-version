@@ -260,3 +260,4 @@ Alternatively, commit a message file and the post will be created automatically:
 3. Optional: update the link in `.github/linkedin/url.txt`.
 
 The workflow `.github/workflows/post-linkedin-on-file.yml` will read these files and post.
+# Trigger deployment
