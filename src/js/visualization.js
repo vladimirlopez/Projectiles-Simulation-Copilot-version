@@ -43,12 +43,12 @@ function updateScale() {
 function setup() {
     const container = document.getElementById('canvasContainer');
     canvasWidth = container.offsetWidth;
-    canvasHeight = 500;
+    canvasHeight = container.offsetHeight;
     
     const canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('canvasContainer');
     
-    // Set origin (bottom-left with compact margins)
+    // Set origin (bottom-left with zero margins for full height)
     origin.x = MARGIN_LEFT;
     origin.y = canvasHeight - MARGIN_BOTTOM;
     
@@ -356,6 +356,7 @@ function windowResized() {
     const container = document.getElementById('canvasContainer');
     if (container) {
         canvasWidth = container.offsetWidth;
+        canvasHeight = container.offsetHeight;
         resizeCanvas(canvasWidth, canvasHeight);
         origin.x = MARGIN_LEFT;
         origin.y = canvasHeight - MARGIN_BOTTOM;
