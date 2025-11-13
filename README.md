@@ -232,3 +232,21 @@ Copyright (c) 2025 Vladimir Lopez
 **Author:** Vladimir Lopez | [vladimirlopez.org](https://vladimirlopez.org)  
 **Purpose:** Physics Education - Projectile Motion  
 **Repository:** [GitHub](https://github.com/vladimirlopez/Projectiles-Simulation-Copilot-version)
+
+## 🔗 One-click LinkedIn Posting (GitHub Actions)
+
+You can post your simulator to LinkedIn via a GitHub Actions workflow included in this repo.
+
+1. Add two repository secrets (Settings → Secrets and variables → Actions → New repository secret):
+    - `LINKEDIN_ACCESS_TOKEN`: OAuth access token with `w_member_social` scope
+    - `LINKEDIN_PERSON_URN`: Your LinkedIn person URN, e.g. `urn:li:person:XXXXXXXX`
+2. Trigger the workflow:
+    - GitHub → Actions → “Post to LinkedIn” → Run workflow
+    - Provide inputs:
+      - `message`: Your post text
+      - `url`: The simulator URL (e.g., `https://vladimirlopez.github.io/Projectiles-Simulation-Copilot-version/`)
+
+Notes:
+
+- You need a LinkedIn Developer App with Marketing Developer Platform access and the `w_member_social` permission for OAuth.
+- The workflow uses `.github/scripts/post-linkedin.mjs` to call `POST /v2/ugcPosts`.

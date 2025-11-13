@@ -1,0 +1,34 @@
+name: Post to LinkedIn
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Post message"
+        required: true
+        type: string
+      url:
+        description: "Link to share (e.g., simulator URL)"
+        required: true
+        type: string
+
+jobs:
+  post:
+    name: Create LinkedIn Post
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Post to LinkedIn
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
+          POST_MESSAGE: ${{ github.event.inputs.message }}
+          POST_URL: ${{ github.event.inputs.url }}
+        run: node .github/scripts/post-linkedin.mjs
