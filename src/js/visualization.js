@@ -7,11 +7,11 @@
 let canvasWidth, canvasHeight;
 let scale = 20; // pixels per meter
 let origin = { x: 0, y: 0 };
-// Tightened margins around the drawing area
+// Minimal margins: zero top/bottom to maximize vertical space
 const MARGIN_LEFT = 40;
 const MARGIN_RIGHT = 20;
-const MARGIN_TOP = 12;
-const MARGIN_BOTTOM = 40;
+const MARGIN_TOP = 0;
+const MARGIN_BOTTOM = 0;
 let maxX = 50; // maximum X coordinate in meters
 let maxY = 50; // maximum Y coordinate in meters
 
@@ -139,10 +139,10 @@ function drawAxes(state) {
     noStroke();
     textSize(12);
     textAlign(CENTER);
-    text('x (m)', canvasWidth - (MARGIN_RIGHT + 10), origin.y + 15);
+    text('x (m)', canvasWidth - (MARGIN_RIGHT + 10), origin.y - 5);
     
     push();
-    translate(origin.x - 30, MARGIN_TOP + 18);
+    translate(origin.x - 30, 18);
     rotate(-HALF_PI);
     text('y (m)', 0, 0);
     pop();
@@ -163,7 +163,7 @@ function drawAxes(state) {
     textAlign(RIGHT, CENTER);
     for (let i = 1; i < 20; i++) {
         const y = origin.y - i * scale;
-        if (y < (MARGIN_TOP + 20)) break;
+        if (y < 12) break;
         
         stroke(95, 103, 112);
         line(origin.x - 5, y, origin.x, y);
