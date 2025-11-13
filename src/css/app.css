@@ -483,6 +483,8 @@ button:disabled {
     flex-direction: column;
     padding: 16px;
     overflow: hidden;
+    flex: 1;
+    min-height: 0;
 }
 
 .visualization-section h2 {

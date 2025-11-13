@@ -42,8 +42,15 @@ function updateScale() {
 
 function setup() {
     const container = document.getElementById('canvasContainer');
-    canvasWidth = container.offsetWidth;
-    canvasHeight = container.offsetHeight;
+    if (!container) {
+        console.error('Canvas container not found!');
+        return;
+    }
+    
+    canvasWidth = container.offsetWidth || 800;
+    canvasHeight = container.offsetHeight || 500;
+    
+    console.log('Canvas dimensions:', canvasWidth, 'x', canvasHeight);
     
     const canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('canvasContainer');
@@ -52,6 +59,7 @@ function setup() {
     origin.x = MARGIN_LEFT;
     origin.y = canvasHeight - MARGIN_BOTTOM;
     
+    updateScale();
     frameRate(60);
 }
 
@@ -60,7 +68,14 @@ function draw() {
     
     // Get app state
     const state = window.getAppState ? window.getAppState() : null;
-    if (!state) return;
+    if (!state) {
+        // Draw a simple test message if no state
+        fill(255);
+        textAlign(CENTER, CENTER);
+        textSize(16);
+        text('Waiting for app to initialize...', canvasWidth/2, canvasHeight/2);
+        return;
+    }
     
     // Check if trajectory exceeds current bounds and adjust
     if (state.trajectory && state.trajectory.length > 0) {
@@ -427,7 +442,7 @@ function windowResized() {
     const container = document.getElementById('canvasContainer');
     if (container) {
         canvasWidth = container.offsetWidth;
-        canvasHeight = container.offsetHeight;
+        canvasHeight = container.offsetHeight || 500; // fallback if container has no height
         resizeCanvas(canvasWidth, canvasHeight);
         origin.x = MARGIN_LEFT;
         origin.y = canvasHeight - MARGIN_BOTTOM;

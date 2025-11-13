@@ -101,39 +101,51 @@ export class UIController {
     }
 
     updateTwoColumns(state, results) {
-        const { v0x, v0y, x, y, vy } = state;
-        const g = this.getParameters().g;
-
-        // Horizontal column
-        this.elements.vx0.textContent = `v₀ₓ = ${v0x.toFixed(2)} m/s`;
-        this.elements.currentX.textContent = `${x.toFixed(2)} m`;
-
-        // Update x position equation based on type
-        if (this.currentType === 'vertical') {
-            this.elements.xPos.textContent = 'x = 0 m';
-        } else {
+        // These elements are now in the canvas overlay, so they may not exist in DOM
+        const params = this.getParameters();
+        const { v0, angle, h0, g } = params;
+        let v0x = 0, v0y = 0;
+        if (this.currentType === 'horizontal') { v0x = v0; }
+        if (this.currentType === 'vertical') { v0y = v0; }
+        if (this.currentType === 'angled') {
+            v0x = v0 * Math.cos(angle * Math.PI/180);
+            v0y = v0 * Math.sin(angle * Math.PI/180);
+        }
+        
+        if (this.elements.vx0) this.elements.vx0.textContent = v0x.toFixed(2);
+        if (this.elements.vy0) this.elements.vy0.textContent = v0y.toFixed(2);
+        if (this.elements.ay) this.elements.ay.textContent = `−${g.toFixed(1)}`;
+        
+        // Current values
+        if (this.elements.currentX) this.elements.currentX.textContent = state.x.toFixed(2);
+        if (this.elements.currentY) this.elements.currentY.textContent = state.y.toFixed(2);
+        if (this.elements.currentVy) this.elements.currentVy.textContent = state.vy.toFixed(2);
+        
+        // Update position equation displays
+        if (this.elements.xPos) {
             this.elements.xPos.textContent = `x = ${v0x.toFixed(2)}·t`;
         }
-
-        // Vertical column
-        this.elements.vy0.textContent = `v₀ᵧ = ${v0y.toFixed(2)} m/s`;
-        this.elements.ay.textContent = `aᵧ = -${g.toFixed(1)} m/s²`;
-        this.elements.currentY.textContent = `${y.toFixed(2)} m`;
-        this.elements.currentVy.textContent = `${vy.toFixed(2)} m/s`;
-
-        // Update y position equation based on type
-        if (this.currentType === 'horizontal') {
-            const h0 = this.getParameters().h0;
-            this.elements.yPos.textContent = `y = ${h0} - ½·${g.toFixed(1)}·t²`;
-        } else {
-            this.elements.yPos.textContent = `y = ${v0y.toFixed(2)}·t - ½·${g.toFixed(1)}·t²`;
+        if (this.elements.yPos) {
+            if (this.currentType === 'horizontal') {
+                const h0 = this.getParameters().h0;
+                this.elements.yPos.textContent = `y = ${h0} - ½·${g.toFixed(1)}·t²`;
+            } else {
+                this.elements.yPos.textContent = `y = ${v0y.toFixed(2)}·t - ½·${g.toFixed(1)}·t²`;
+            }
         }
     }
 
     updateResults(results) {
-        this.elements.timeOfFlight.textContent = `${results.timeOfFlight.toFixed(2)} s`;
-        this.elements.maxHeight.textContent = `${results.maxHeight.toFixed(2)} m`;
-        this.elements.range.textContent = `${results.range.toFixed(2)} m`;
+        // These elements are now in the canvas overlay, so they may not exist in DOM
+        if (this.elements.timeOfFlight) {
+            this.elements.timeOfFlight.textContent = `${results.timeOfFlight.toFixed(2)} s`;
+        }
+        if (this.elements.maxHeight) {
+            this.elements.maxHeight.textContent = `${results.maxHeight.toFixed(2)} m`;
+        }
+        if (this.elements.range) {
+            this.elements.range.textContent = `${results.range.toFixed(2)} m`;
+        }
         // Show prediction feedback if resultPanel exists
         const resultPanel = document.getElementById('resultPanel');
         if (resultPanel && results.predictionFeedback) {
@@ -142,7 +154,9 @@ export class UIController {
     }
 
     updateCurrentTime(time) {
-        this.elements.currentTime.textContent = `${time.toFixed(2)} s`;
+        if (this.elements.currentTime) {
+            this.elements.currentTime.textContent = `${time.toFixed(2)} s`;
+        }
     }
 
     setControlsEnabled(enabled) {
