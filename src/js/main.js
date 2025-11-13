@@ -267,6 +267,9 @@ class ProjectileApp {
         // Update score
         this.state.score += 10;
         this.updateScore();
+        
+        // Ensure canvas scale is set for full trajectory visibility
+        this.updateFromUI();
 
         // Start animation
         this.animate();
@@ -504,30 +507,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const origUpdateFromUI = app.updateFromUI.bind(app);
     app.updateFromUI = function() {
         origUpdateFromUI();
-        // Estimate max x/y based on params
+        // Estimate max x/y based on params with proper safety margins
         const params = app.ui.getParameters();
+        const safetyMargin = 1.25; // 25% extra space
         let maxX = 10, maxY = 10;
+        
         if (params.type === 'vertical') {
-            maxY = params.h0 + (params.v0 > 0 ? (params.v0*params.v0)/(2*params.g) : 0);
-            maxY = Math.max(maxY, params.h0);
-            maxX = 10;
+            // Vertical: only y motion
+            const v0 = params.v0 || 0;
+            const h0 = params.h0 || 0;
+            const g = params.g || 9.8;
+            
+            if (v0 > 0) {
+                // Upward: max height is h0 + v0²/(2g)
+                maxY = h0 + (v0 * v0) / (2 * g);
+            } else {
+                // Downward or from rest: just initial height
+                maxY = h0;
+            }
+            maxY = Math.max(maxY, 5); // minimum 5m
+            maxX = Math.max(maxY * 0.2, 8); // proportional x-axis for vertical
+            
         } else if (params.type === 'horizontal') {
-            const t = Math.sqrt(2*params.h0/params.g);
-            maxX = params.v0 * t;
-            maxY = params.h0;
+            // Horizontal: x = v0·t, y = h0 − ½g·t²
+            const v0 = params.v0 || 0;
+            const h0 = params.h0 || 0;
+            const g = params.g || 9.8;
+            
+            if (h0 > 0) {
+                const t = Math.sqrt((2 * h0) / g);
+                maxX = Math.abs(v0 * t);
+                maxY = h0;
+            } else {
+                maxX = 10;
+                maxY = 5;
+            }
+            
         } else if (params.type === 'angled') {
-            const v0y = params.v0 * Math.sin(params.angle*Math.PI/180);
-            maxY = params.h0 + (v0y>0 ? (v0y*v0y)/(2*params.g) : 0);
-            const v0x = params.v0 * Math.cos(params.angle*Math.PI/180);
-            const a = -0.5*params.g, b = v0y, c = params.h0;
-            const disc = b*b - 4*a*c;
-            let t = 0;
-            if (disc >= 0) t = (-b + Math.sqrt(disc)) / (2*a);
-            maxX = v0x * t;
+            // Angled: full 2D trajectory
+            const v0 = params.v0 || 0;
+            const angle = params.angle || 0;
+            const h0 = params.h0 || 0;
+            const g = params.g || 9.8;
+            
+            const v0x = v0 * Math.cos(angle * Math.PI / 180);
+            const v0y = v0 * Math.sin(angle * Math.PI / 180);
+            
+            // Max height: h0 + v0y²/(2g) if v0y > 0
+            if (v0y > 0) {
+                maxY = h0 + (v0y * v0y) / (2 * g);
+            } else {
+                maxY = h0;
+            }
+            
+            // Time of flight: solve y(t) = 0
+            const a = -0.5 * g;
+            const b = v0y;
+            const c = h0;
+            const disc = b * b - 4 * a * c;
+            let tFlight = 0;
+            if (disc >= 0) {
+                tFlight = (-b + Math.sqrt(disc)) / (2 * a);
+            }
+            
+            // Range at landing
+            maxX = Math.abs(v0x * tFlight);
         }
-        maxX = Math.max(10, Math.abs(maxX)*1.1);
-        maxY = Math.max(10, Math.abs(maxY)*1.1);
-        if (window.setCanvasScale) window.setCanvasScale(maxX, maxY);
+        
+        // Apply safety margins and minimums
+        maxX = Math.max(8, Math.abs(maxX) * safetyMargin);
+        maxY = Math.max(5, Math.abs(maxY) * safetyMargin);
+        
+        if (window.setCanvasScale) {
+            window.setCanvasScale(maxX, maxY);
+        }
     };
 });
 

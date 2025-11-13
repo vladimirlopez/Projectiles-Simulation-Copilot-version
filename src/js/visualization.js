@@ -7,11 +7,33 @@
 let canvasWidth, canvasHeight;
 let scale = 20; // pixels per meter
 let origin = { x: 0, y: 0 };
+let maxX = 50; // maximum X coordinate in meters
+let maxY = 50; // maximum Y coordinate in meters
 
 // Animation state
 let projectile = { x: 0, y: 0 };
 let trail = [];
 let maxTrailLength = 100;
+
+// Function to update scale based on expected trajectory bounds
+window.setCanvasScale = function(expectedMaxX, expectedMaxY) {
+    const margin = 1.2; // 20% margin
+    maxX = Math.max(10, expectedMaxX * margin);
+    maxY = Math.max(10, expectedMaxY * margin);
+    updateScale();
+};
+
+function updateScale() {
+    const availableWidth = canvasWidth - 100; // margins
+    const availableHeight = canvasHeight - 100; // margins
+    
+    const scaleX = availableWidth / maxX;
+    const scaleY = availableHeight / maxY;
+    
+    // Use the smaller scale to fit both dimensions
+    scale = Math.min(scaleX, scaleY, 30); // cap at 30 for readability
+    scale = Math.max(scale, 5); // minimum scale for very large trajectories
+}
 
 function setup() {
     const container = document.getElementById('canvasContainer');
@@ -34,6 +56,21 @@ function draw() {
     // Get app state
     const state = window.getAppState ? window.getAppState() : null;
     if (!state) return;
+    
+    // Check if trajectory exceeds current bounds and adjust
+    if (state.trajectory && state.trajectory.length > 0) {
+        let needsRescale = false;
+        for (let point of state.trajectory) {
+            if (point.x > maxX * 0.9 || point.y > maxY * 0.9) {
+                maxX = Math.max(maxX, point.x * 1.3);
+                maxY = Math.max(maxY, point.y * 1.3);
+                needsRescale = true;
+            }
+        }
+        if (needsRescale) {
+            updateScale();
+        }
+    }
     
     // Draw grid if enabled
     if (state.showGrid) {
@@ -317,5 +354,6 @@ function windowResized() {
         resizeCanvas(canvasWidth, canvasHeight);
         origin.x = 60;
         origin.y = canvasHeight - 60;
+        updateScale();
     }
 }
