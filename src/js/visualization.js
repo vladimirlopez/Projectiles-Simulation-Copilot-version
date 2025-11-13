@@ -29,7 +29,7 @@ function setup() {
 }
 
 function draw() {
-    background(250);
+    background(26, 31, 38);
     
     // Get app state
     const state = window.getAppState ? window.getAppState() : null;
@@ -66,7 +66,7 @@ function draw() {
 }
 
 function drawGrid() {
-    stroke(220);
+    stroke(60, 65, 75);
     strokeWeight(1);
     
     // Vertical lines
@@ -81,19 +81,19 @@ function drawGrid() {
 }
 
 function drawAxes(state) {
-    stroke(100);
+    stroke(150);
     strokeWeight(2);
     
     // X-axis (horizontal)
-    stroke(59, 130, 246); // Blue for horizontal
+    stroke(0, 188, 212); // Cyan for horizontal
     line(origin.x, origin.y, canvasWidth - 20, origin.y);
     
     // Y-axis (vertical)
-    stroke(239, 68, 68); // Red for vertical
+    stroke(255, 107, 107); // Red for vertical
     line(origin.x, origin.y, origin.x, 20);
     
     // Labels
-    fill(100);
+    fill(224, 224, 224);
     noStroke();
     textSize(12);
     textAlign(CENTER);
@@ -106,12 +106,15 @@ function drawAxes(state) {
     pop();
     
     // Scale markers
+    fill(176, 176, 176);
     textAlign(CENTER, TOP);
     for (let i = 1; i < 20; i++) {
         const x = origin.x + i * scale;
         if (x > canvasWidth - 40) break;
         
+        stroke(95, 103, 112);
         line(x, origin.y, x, origin.y + 5);
+        noStroke();
         text(i, x, origin.y + 8);
     }
     
@@ -120,7 +123,9 @@ function drawAxes(state) {
         const y = origin.y - i * scale;
         if (y < 40) break;
         
+        stroke(95, 103, 112);
         line(origin.x - 5, y, origin.x, y);
+        noStroke();
         text(i, origin.x - 8, y);
     }
 }
@@ -131,14 +136,14 @@ function drawLaunchPoint(state) {
     
     // Draw launch platform if height > 0
     if (h0 > 0) {
-        fill(100);
+        fill(95, 103, 112);
         noStroke();
         rect(origin.x - 30, launchY, 30, origin.y - launchY);
     }
     
     // Draw launch point marker
-    fill(100);
-    stroke(255);
+    fill(0, 188, 212);
+    stroke(224, 224, 224);
     strokeWeight(2);
     circle(origin.x, launchY, 8);
 }
@@ -153,8 +158,8 @@ function drawProjectile(state) {
     // Draw trail if enabled
     if (state.showTrail && state.trajectory.length > 1) {
         noFill();
-        stroke(100, 100, 250, 150);
-        strokeWeight(2);
+        stroke(255, 215, 0, 200);
+        strokeWeight(3);
         
         beginShape();
         for (let i = Math.max(0, state.trajectory.length - maxTrailLength); i < state.trajectory.length; i++) {
@@ -167,13 +172,13 @@ function drawProjectile(state) {
     }
     
     // Draw projectile
-    fill(255, 100, 100);
-    stroke(200, 50, 50);
+    fill(255, 215, 0);
+    stroke(255, 255, 255);
     strokeWeight(2);
     circle(screenX, screenY, 16);
     
     // Draw position coordinates
-    fill(50);
+    fill(224, 224, 224);
     noStroke();
     textSize(11);
     textAlign(LEFT, BOTTOM);
@@ -183,7 +188,7 @@ function drawProjectile(state) {
 function drawTrajectoryPath(state) {
     if (!state.trajectory || state.trajectory.length < 2) return;
     
-    stroke(100, 150, 255, 100);
+    stroke(255, 215, 0, 120);
     strokeWeight(1);
     noFill();
     
@@ -217,8 +222,8 @@ function drawVectors(state) {
     
     const vectorScale = 3; // Scale for visibility
     
-    // Horizontal velocity vector (blue)
-    stroke(59, 130, 246);
+    // Horizontal velocity vector (cyan)
+    stroke(0, 188, 212);
     strokeWeight(3);
     drawArrow(
         screenX, 
@@ -229,7 +234,7 @@ function drawVectors(state) {
     );
     
     // Vertical velocity vector (red)
-    stroke(239, 68, 68);
+    stroke(255, 107, 107);
     drawArrow(
         screenX, 
         screenY, 
@@ -238,8 +243,8 @@ function drawVectors(state) {
         'vᵧ'
     );
     
-    // Total velocity vector (purple)
-    stroke(147, 51, 234);
+    // Total velocity vector (gold)
+    stroke(255, 215, 0);
     drawArrow(
         screenX, 
         screenY, 
@@ -264,7 +269,7 @@ function drawArrow(x1, y1, x2, y2, label) {
     pop();
     
     // Draw label
-    fill(50);
+    fill(224, 224, 224);
     noStroke();
     textSize(12);
     textAlign(CENTER, CENTER);
@@ -275,12 +280,12 @@ function drawArrow(x1, y1, x2, y2, label) {
 
 function drawHUD(state) {
     // Draw HUD in top-right corner
-    fill(255, 255, 255, 240);
-    stroke(200);
+    fill(56, 62, 69, 240);
+    stroke(95, 103, 112);
     strokeWeight(1);
     rect(canvasWidth - 180, 10, 170, 80, 8);
     
-    fill(50);
+    fill(224, 224, 224);
     noStroke();
     textSize(11);
     textAlign(LEFT, TOP);
