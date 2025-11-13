@@ -507,9 +507,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const origUpdateFromUI = app.updateFromUI.bind(app);
     app.updateFromUI = function() {
         origUpdateFromUI();
-        // Estimate max x/y based on params with proper safety margins
+        // Estimate max x/y based on params with tighter safety margins
         const params = app.ui.getParameters();
-        const safetyMargin = 1.25; // 25% extra space
+        const safetyMargin = 1.10; // 10% extra space
         let maxX = 10, maxY = 10;
         
         if (params.type === 'vertical') {

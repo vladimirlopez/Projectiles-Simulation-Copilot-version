@@ -7,6 +7,11 @@
 let canvasWidth, canvasHeight;
 let scale = 20; // pixels per meter
 let origin = { x: 0, y: 0 };
+// Tightened margins around the drawing area
+const MARGIN_LEFT = 40;
+const MARGIN_RIGHT = 20;
+const MARGIN_TOP = 12;
+const MARGIN_BOTTOM = 40;
 let maxX = 50; // maximum X coordinate in meters
 let maxY = 50; // maximum Y coordinate in meters
 
@@ -17,15 +22,15 @@ let maxTrailLength = 100;
 
 // Function to update scale based on expected trajectory bounds
 window.setCanvasScale = function(expectedMaxX, expectedMaxY) {
-    const margin = 1.2; // 20% margin
+    const margin = 1.1; // tighter 10% margin
     maxX = Math.max(10, expectedMaxX * margin);
     maxY = Math.max(10, expectedMaxY * margin);
     updateScale();
 };
 
 function updateScale() {
-    const availableWidth = canvasWidth - 100; // margins
-    const availableHeight = canvasHeight - 100; // margins
+    const availableWidth = canvasWidth - (MARGIN_LEFT + MARGIN_RIGHT);
+    const availableHeight = canvasHeight - (MARGIN_TOP + MARGIN_BOTTOM);
     
     const scaleX = availableWidth / maxX;
     const scaleY = availableHeight / maxY;
@@ -43,9 +48,9 @@ function setup() {
     const canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('canvasContainer');
     
-    // Set origin (bottom-left with some margin)
-    origin.x = 60;
-    origin.y = canvasHeight - 60;
+    // Set origin (bottom-left with compact margins)
+    origin.x = MARGIN_LEFT;
+    origin.y = canvasHeight - MARGIN_BOTTOM;
     
     frameRate(60);
 }
@@ -107,13 +112,13 @@ function drawGrid() {
     strokeWeight(1);
     
     // Vertical lines
-    for (let x = origin.x; x < canvasWidth - 20; x += scale) {
-        line(x, 20, x, origin.y);
+    for (let x = origin.x; x < canvasWidth - MARGIN_RIGHT; x += scale) {
+        line(x, MARGIN_TOP, x, origin.y);
     }
     
     // Horizontal lines
-    for (let y = origin.y; y > 20; y -= scale) {
-        line(origin.x, y, canvasWidth - 20, y);
+    for (let y = origin.y; y > MARGIN_TOP; y -= scale) {
+        line(origin.x, y, canvasWidth - MARGIN_RIGHT, y);
     }
 }
 
@@ -123,21 +128,21 @@ function drawAxes(state) {
     
     // X-axis (horizontal)
     stroke(0, 188, 212); // Cyan for horizontal
-    line(origin.x, origin.y, canvasWidth - 20, origin.y);
+    line(origin.x, origin.y, canvasWidth - MARGIN_RIGHT, origin.y);
     
     // Y-axis (vertical)
     stroke(255, 107, 107); // Red for vertical
-    line(origin.x, origin.y, origin.x, 20);
+    line(origin.x, origin.y, origin.x, MARGIN_TOP);
     
     // Labels
     fill(224, 224, 224);
     noStroke();
     textSize(12);
     textAlign(CENTER);
-    text('x (m)', canvasWidth - 30, origin.y + 15);
+    text('x (m)', canvasWidth - (MARGIN_RIGHT + 10), origin.y + 15);
     
     push();
-    translate(origin.x - 30, 30);
+    translate(origin.x - 30, MARGIN_TOP + 18);
     rotate(-HALF_PI);
     text('y (m)', 0, 0);
     pop();
@@ -147,7 +152,7 @@ function drawAxes(state) {
     textAlign(CENTER, TOP);
     for (let i = 1; i < 20; i++) {
         const x = origin.x + i * scale;
-        if (x > canvasWidth - 40) break;
+        if (x > canvasWidth - (MARGIN_RIGHT + 20)) break;
         
         stroke(95, 103, 112);
         line(x, origin.y, x, origin.y + 5);
@@ -158,7 +163,7 @@ function drawAxes(state) {
     textAlign(RIGHT, CENTER);
     for (let i = 1; i < 20; i++) {
         const y = origin.y - i * scale;
-        if (y < 40) break;
+        if (y < (MARGIN_TOP + 20)) break;
         
         stroke(95, 103, 112);
         line(origin.x - 5, y, origin.x, y);
@@ -352,8 +357,8 @@ function windowResized() {
     if (container) {
         canvasWidth = container.offsetWidth;
         resizeCanvas(canvasWidth, canvasHeight);
-        origin.x = 60;
-        origin.y = canvasHeight - 60;
+        origin.x = MARGIN_LEFT;
+        origin.y = canvasHeight - MARGIN_BOTTOM;
         updateScale();
     }
 }
