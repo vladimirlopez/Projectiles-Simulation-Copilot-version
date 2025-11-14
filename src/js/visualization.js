@@ -37,8 +37,9 @@ function updateScale() {
     const scaleX = availableWidth / maxX;
     const scaleY = availableHeight / maxY;
     
-    // Use the smaller scale to fit both dimensions
-    scale = Math.min(scaleX, scaleY, 30); // cap at 30 for readability
+    // Use the smaller scale to fit both dimensions; slightly higher cap on phones for visibility
+    const cap = (canvasWidth && canvasWidth < 480) ? 45 : 30;
+    scale = Math.min(scaleX, scaleY, cap);
     scale = Math.max(scale, 5); // minimum scale for very large trajectories
 }
 
@@ -409,7 +410,7 @@ function drawArrow(x1, y1, x2, y2, label) {
 
 function drawHUD(state) {
     // Comprehensive info panel in top-right with two-columns analysis
-    const panelWidth = Math.max(220, Math.min(360, Math.floor(canvasWidth * 0.28)));
+    const panelWidth = Math.max(160, Math.min(320, Math.floor(canvasWidth * 0.28)));
     const panelX = canvasWidth - panelWidth - 10;
     const panelY = 10;
     // UI scale factor based on canvas width for typography

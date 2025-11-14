@@ -239,6 +239,22 @@ class ProjectileApp {
             this.state.parameters
         );
 
+        // Inform visualization of expected bounds so the projectile fills the view on small screens
+        try {
+            const r = this.state.results;
+            let expectedMaxX = 10; // default horizontal span
+            let expectedMaxY = Math.max(10, r.maxHeight || 10);
+            if (params.type === 'horizontal' || params.type === 'angled') {
+                expectedMaxX = Math.max(10, r.range || 10);
+            } else {
+                // vertical: give some horizontal room for labels/ball
+                expectedMaxX = Math.max(10, Math.min(20, expectedMaxY * 0.6));
+            }
+            if (typeof window.setCanvasScale === 'function') {
+                window.setCanvasScale(expectedMaxX, expectedMaxY);
+            }
+        } catch (_) { /* no-op */ }
+
         // Update UI displays
         this.ui.updateResults(this.state.results);
         this.updateTips();
