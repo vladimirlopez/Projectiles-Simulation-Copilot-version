@@ -22,6 +22,17 @@ let maxTrailLength = 100;
 let debugOverlay = false;
 let containerResizeObserver = null;
 
+function computeCanvasSize(container) {
+    let w = container.offsetWidth || 800;
+    let h = container.offsetHeight || 500;
+    // Prevent over-stretched, ultra-wide canvases by clamping aspect ratio
+    const maxAspect = 1.25; // width/height
+    if (w > h * maxAspect) {
+        w = Math.floor(h * maxAspect);
+    }
+    return { w, h };
+}
+
 // Function to update scale based on expected trajectory bounds
 window.setCanvasScale = function(expectedMaxX, expectedMaxY) {
     const margin = 1.1; // tighter 10% margin
@@ -68,8 +79,9 @@ function setup() {
         return;
     }
     
-    canvasWidth = container.offsetWidth || 800;
-    canvasHeight = container.offsetHeight || 500;
+    const sz = computeCanvasSize(container);
+    canvasWidth = sz.w;
+    canvasHeight = sz.h;
     
     console.log('Canvas dimensions:', canvasWidth, 'x', canvasHeight);
     
@@ -94,16 +106,19 @@ function setup() {
     if ('ResizeObserver' in window) {
         containerResizeObserver = new ResizeObserver(entries => {
             for (const entry of entries) {
-                const w = Math.floor(entry.contentRect.width);
-                const h = Math.floor(entry.contentRect.height);
-                if (w && h && (w !== canvasWidth || h !== canvasHeight)) {
-                    canvasWidth = w;
-                    canvasHeight = h;
-                    resizeCanvas(canvasWidth, canvasHeight);
-                    updateMargins();
-                    origin.x = MARGIN_LEFT;
-                    origin.y = canvasHeight - MARGIN_BOTTOM;
-                    updateScale();
+                const cw = Math.floor(entry.contentRect.width);
+                const ch = Math.floor(entry.contentRect.height);
+                if (cw && ch) {
+                    const sz2 = computeCanvasSize(container);
+                    if (sz2.w !== canvasWidth || sz2.h !== canvasHeight) {
+                        canvasWidth = sz2.w;
+                        canvasHeight = sz2.h;
+                        resizeCanvas(canvasWidth, canvasHeight);
+                        updateMargins();
+                        origin.x = MARGIN_LEFT;
+                        origin.y = canvasHeight - MARGIN_BOTTOM;
+                        updateScale();
+                    }
                 }
             }
         });
@@ -409,46 +424,66 @@ function drawArrow(x1, y1, x2, y2, label) {
 }
 
 function drawHUD(state) {
-    // Comprehensive info panel in top-right with two-columns analysis
-    const panelWidth = Math.max(160, Math.min(320, Math.floor(canvasWidth * 0.28)));
+    // Panel geometry and scale
+    const panelWidth = Math.max(160, Math.min(320, Math.floor(canvasWidth * 0.26)));
     const panelX = canvasWidth - panelWidth - 10;
     const panelY = 10;
-    // UI scale factor based on canvas width for typography
     const uiScale = Math.max(0.85, Math.min(1.15, canvasWidth / 900));
-    
-    // Semi-transparent background
+
+    // Measure content height (no drawing)
+    let measureY = 12;
+    measureY += Math.floor(22 * uiScale); // title
+    measureY += Math.floor(18 * uiScale); // time
+    measureY += Math.floor(16 * uiScale); // horizontal header
+    measureY += Math.floor(14 * uiScale); // v0x
+    measureY += Math.floor(14 * uiScale); // ax
+    measureY += Math.floor(14 * uiScale); // x
+    measureY += Math.floor(20 * uiScale); // vx spacer
+    measureY += Math.floor(16 * uiScale); // vertical header
+    measureY += Math.floor(14 * uiScale); // v0y
+    measureY += Math.floor(14 * uiScale); // ay
+    measureY += Math.floor(14 * uiScale); // y
+    measureY += Math.floor(20 * uiScale); // vy spacer
+    measureY += Math.floor(16 * uiScale); // results header
+    measureY += Math.floor(14 * uiScale); // time of flight
+    measureY += Math.floor(14 * uiScale); // max height
+    measureY += Math.floor(14 * uiScale); // range
+    const panelHeight = Math.min(canvasHeight - 20, measureY + 8);
+
+    // Draw background first
     fill(56, 62, 69, 235);
     stroke(95, 103, 112);
     strokeWeight(1);
-    rect(panelX, panelY, panelWidth, canvasHeight - 20, 8);
-    
+    rect(panelX, panelY, panelWidth, panelHeight, 8);
+
+    // Then draw content
     fill(224, 224, 224);
     noStroke();
     textSize(10 * uiScale);
     textAlign(LEFT, TOP);
-    
+
     let y = panelY + 12;
     const leftCol = panelX + 10;
     const rightCol = panelX + panelWidth / 2 + 5;
-    
+
     // Title
     textSize(12 * uiScale);
     fill(0, 188, 212);
     text('📊 Two-Column Analysis', leftCol, y);
     y += Math.floor(22 * uiScale);
-    
+
     // Current time
     textSize(10 * uiScale);
     fill(224, 224, 224);
     text(`⏲️ Time: ${state.currentTime.toFixed(2)} s`, leftCol, y);
     y += Math.floor(18 * uiScale);
-    
+
     // Horizontal column
     textSize(11 * uiScale);
     fill(0, 188, 212);
     text('🔵 Horizontal (x)', leftCol, y);
     y += Math.floor(16 * uiScale);
-    
+
     textSize(9 * uiScale);
     fill(176, 176, 176);
     const results = state.results || {};
@@ -457,21 +492,21 @@ function drawHUD(state) {
     y += Math.floor(14 * uiScale);
     text(`aₓ: 0 m/s²`, leftCol, y);
     y += Math.floor(14 * uiScale);
-    
+
     const trajectory = state.trajectory || [];
-    const current = trajectory.length > 0 ? trajectory[trajectory.length - 1] : {x: 0, y: 0};
+    const current = trajectory.length > 0 ? trajectory[trajectory.length - 1] : { x: 0, y: 0 };
     fill(255, 215, 0);
     text(`x: ${current.x.toFixed(2)} m`, leftCol, y);
     y += Math.floor(14 * uiScale);
     text(`vₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
     y += Math.floor(20 * uiScale);
-    
+
     // Vertical column
     textSize(11 * uiScale);
     fill(255, 107, 107);
     text('🔴 Vertical (y)', leftCol, y);
     y += Math.floor(16 * uiScale);
-    
+
     textSize(9 * uiScale);
     fill(176, 176, 176);
     const v0y = results.v0y || 0;
@@ -480,33 +515,33 @@ function drawHUD(state) {
     y += Math.floor(14 * uiScale);
     text(`aᵧ: -${g.toFixed(1)} m/s²`, leftCol, y);
     y += Math.floor(14 * uiScale);
-    
+
     fill(255, 215, 0);
     text(`y: ${current.y.toFixed(2)} m`, leftCol, y);
     y += Math.floor(14 * uiScale);
     const vy = v0y - g * state.currentTime;
     text(`vᵧ: ${vy.toFixed(2)} m/s`, leftCol, y);
     y += Math.floor(20 * uiScale);
-    
+
     // Results section
     textSize(11 * uiScale);
     fill(0, 188, 212);
     text('📋 Results', leftCol, y);
     y += Math.floor(16 * uiScale);
-    
+
     textSize(9 * uiScale);
     fill(176, 176, 176);
     text('Time of Flight:', leftCol, y);
     fill(224, 224, 224);
     text(results.timeOfFlight ? `${results.timeOfFlight.toFixed(2)} s` : '—', rightCol, y);
     y += Math.floor(14 * uiScale);
-    
+
     fill(176, 176, 176);
     text('Max Height:', leftCol, y);
     fill(224, 224, 224);
     text(results.maxHeight ? `${results.maxHeight.toFixed(2)} m` : '—', rightCol, y);
     y += Math.floor(14 * uiScale);
-    
+
     fill(176, 176, 176);
     text('Range:', leftCol, y);
     fill(224, 224, 224);
@@ -516,8 +551,9 @@ function drawHUD(state) {
 function windowResized() {
     const container = document.getElementById('canvasContainer');
     if (container) {
-        canvasWidth = container.offsetWidth;
-        canvasHeight = container.offsetHeight || 500; // fallback if container has no height
+        const sz = computeCanvasSize(container);
+        canvasWidth = sz.w;
+        canvasHeight = sz.h; // fallback handled in computeCanvasSize
         resizeCanvas(canvasWidth, canvasHeight);
         updateMargins();
         origin.x = MARGIN_LEFT;
