@@ -7,11 +7,11 @@
 let canvasWidth, canvasHeight;
 let scale = 20; // pixels per meter
 let origin = { x: 0, y: 0 };
-// Minimal margins: zero top/bottom to maximize vertical space
-const MARGIN_LEFT = 40;
-const MARGIN_RIGHT = 20;
-const MARGIN_TOP = 0;
-const MARGIN_BOTTOM = 0;
+// Responsive margins: zero top/bottom to maximize vertical space, adaptive sides
+let MARGIN_LEFT = 40;
+let MARGIN_RIGHT = 20;
+let MARGIN_TOP = 0;
+let MARGIN_BOTTOM = 0;
 let maxX = 50; // maximum X coordinate in meters
 let maxY = 50; // maximum Y coordinate in meters
 
@@ -40,6 +40,24 @@ function updateScale() {
     scale = Math.max(scale, 5); // minimum scale for very large trajectories
 }
 
+function updateMargins() {
+    // Side margins adapt to canvas size so axes labels remain legible
+    const w = canvasWidth || 800;
+    if (w < 420) {
+        MARGIN_LEFT = 28;
+        MARGIN_RIGHT = 12;
+    } else if (w < 720) {
+        MARGIN_LEFT = 36;
+        MARGIN_RIGHT = 16;
+    } else {
+        MARGIN_LEFT = 40;
+        MARGIN_RIGHT = 20;
+    }
+    // Keep vertical margins minimal to avoid blank space
+    MARGIN_TOP = 0;
+    MARGIN_BOTTOM = 0;
+}
+
 function setup() {
     const container = document.getElementById('canvasContainer');
     if (!container) {
@@ -56,6 +74,7 @@ function setup() {
     canvas.parent('canvasContainer');
     
     // Set origin (bottom-left with zero margins for full height)
+    updateMargins();
     origin.x = MARGIN_LEFT;
     origin.y = canvasHeight - MARGIN_BOTTOM;
     
@@ -337,9 +356,11 @@ function drawArrow(x1, y1, x2, y2, label) {
 
 function drawHUD(state) {
     // Comprehensive info panel in top-right with two-columns analysis
-    const panelWidth = 280;
+    const panelWidth = Math.max(220, Math.min(360, Math.floor(canvasWidth * 0.28)));
     const panelX = canvasWidth - panelWidth - 10;
     const panelY = 10;
+    // UI scale factor based on canvas width for typography
+    const uiScale = Math.max(0.85, Math.min(1.15, canvasWidth / 900));
     
     // Semi-transparent background
     fill(56, 62, 69, 235);
@@ -349,7 +370,7 @@ function drawHUD(state) {
     
     fill(224, 224, 224);
     noStroke();
-    textSize(10);
+    textSize(10 * uiScale);
     textAlign(LEFT, TOP);
     
     let y = panelY + 12;
@@ -357,80 +378,80 @@ function drawHUD(state) {
     const rightCol = panelX + panelWidth / 2 + 5;
     
     // Title
-    textSize(12);
+    textSize(12 * uiScale);
     fill(0, 188, 212);
     text('📊 Two-Column Analysis', leftCol, y);
-    y += 22;
+    y += Math.floor(22 * uiScale);
     
     // Current time
-    textSize(10);
+    textSize(10 * uiScale);
     fill(224, 224, 224);
     text(`⏲️ Time: ${state.currentTime.toFixed(2)} s`, leftCol, y);
-    y += 18;
+    y += Math.floor(18 * uiScale);
     
     // Horizontal column
-    textSize(11);
+    textSize(11 * uiScale);
     fill(0, 188, 212);
     text('🔵 Horizontal (x)', leftCol, y);
-    y += 16;
+    y += Math.floor(16 * uiScale);
     
-    textSize(9);
+    textSize(9 * uiScale);
     fill(176, 176, 176);
     const results = state.results || {};
     const v0x = results.v0x || 0;
     text(`v₀ₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     text(`aₓ: 0 m/s²`, leftCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     
     const trajectory = state.trajectory || [];
     const current = trajectory.length > 0 ? trajectory[trajectory.length - 1] : {x: 0, y: 0};
     fill(255, 215, 0);
     text(`x: ${current.x.toFixed(2)} m`, leftCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     text(`vₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
-    y += 20;
+    y += Math.floor(20 * uiScale);
     
     // Vertical column
-    textSize(11);
+    textSize(11 * uiScale);
     fill(255, 107, 107);
     text('🔴 Vertical (y)', leftCol, y);
-    y += 16;
+    y += Math.floor(16 * uiScale);
     
-    textSize(9);
+    textSize(9 * uiScale);
     fill(176, 176, 176);
     const v0y = results.v0y || 0;
     const g = state.parameters.g || 9.8;
     text(`v₀ᵧ: ${v0y.toFixed(2)} m/s`, leftCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     text(`aᵧ: -${g.toFixed(1)} m/s²`, leftCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     
     fill(255, 215, 0);
     text(`y: ${current.y.toFixed(2)} m`, leftCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     const vy = v0y - g * state.currentTime;
     text(`vᵧ: ${vy.toFixed(2)} m/s`, leftCol, y);
-    y += 20;
+    y += Math.floor(20 * uiScale);
     
     // Results section
-    textSize(11);
+    textSize(11 * uiScale);
     fill(0, 188, 212);
     text('📋 Results', leftCol, y);
-    y += 16;
+    y += Math.floor(16 * uiScale);
     
-    textSize(9);
+    textSize(9 * uiScale);
     fill(176, 176, 176);
     text('Time of Flight:', leftCol, y);
     fill(224, 224, 224);
     text(results.timeOfFlight ? `${results.timeOfFlight.toFixed(2)} s` : '—', rightCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     
     fill(176, 176, 176);
     text('Max Height:', leftCol, y);
     fill(224, 224, 224);
     text(results.maxHeight ? `${results.maxHeight.toFixed(2)} m` : '—', rightCol, y);
-    y += 14;
+    y += Math.floor(14 * uiScale);
     
     fill(176, 176, 176);
     text('Range:', leftCol, y);
@@ -444,6 +465,7 @@ function windowResized() {
         canvasWidth = container.offsetWidth;
         canvasHeight = container.offsetHeight || 500; // fallback if container has no height
         resizeCanvas(canvasWidth, canvasHeight);
+        updateMargins();
         origin.x = MARGIN_LEFT;
         origin.y = canvasHeight - MARGIN_BOTTOM;
         updateScale();

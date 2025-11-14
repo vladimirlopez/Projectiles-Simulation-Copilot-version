@@ -108,7 +108,12 @@ body.embed main {
 }
 body.embed .instructions { display: none; }
 body.embed .viz-controls { margin-bottom: 6px; }
-body.embed #canvasContainer { height: 380px; }
+/* Embed mode: give the simulation real vertical space inside Canvas LMS */
+body.embed #canvasContainer {
+    height: 82vh;         /* fill most of the viewport height */
+    min-height: 560px;    /* ensure usability on short viewports */
+    max-height: 92vh;     /* avoid exceeding viewport */
+}
 
 /* Result Panel for prediction/game feedback */
 #resultPanel {
