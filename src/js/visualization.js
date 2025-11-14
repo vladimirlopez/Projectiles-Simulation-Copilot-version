@@ -19,6 +19,8 @@ let maxY = 50; // maximum Y coordinate in meters
 let projectile = { x: 0, y: 0 };
 let trail = [];
 let maxTrailLength = 100;
+let debugOverlay = false;
+let containerResizeObserver = null;
 
 // Function to update scale based on expected trajectory bounds
 window.setCanvasScale = function(expectedMaxX, expectedMaxY) {
@@ -80,6 +82,32 @@ function setup() {
     
     updateScale();
     frameRate(60);
+
+    // Enable debug overlay via query param ?debug=1
+    try {
+        const q = new URLSearchParams(window.location.search);
+        debugOverlay = q.has('debug') && q.get('debug') !== '0' && q.get('debug') !== 'false';
+    } catch (_) {}
+
+    // Observe container resize (works inside LMS reflows too)
+    if ('ResizeObserver' in window) {
+        containerResizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const w = Math.floor(entry.contentRect.width);
+                const h = Math.floor(entry.contentRect.height);
+                if (w && h && (w !== canvasWidth || h !== canvasHeight)) {
+                    canvasWidth = w;
+                    canvasHeight = h;
+                    resizeCanvas(canvasWidth, canvasHeight);
+                    updateMargins();
+                    origin.x = MARGIN_LEFT;
+                    origin.y = canvasHeight - MARGIN_BOTTOM;
+                    updateScale();
+                }
+            }
+        });
+        containerResizeObserver.observe(container);
+    }
 }
 
 function draw() {
@@ -93,6 +121,7 @@ function draw() {
         textAlign(CENTER, CENTER);
         textSize(16);
         text('Waiting for app to initialize...', canvasWidth/2, canvasHeight/2);
+        if (debugOverlay) drawDebugInfo(null);
         return;
     }
     
@@ -139,6 +168,30 @@ function draw() {
     
     // Draw HUD
     drawHUD(state);
+
+    if (debugOverlay) drawDebugInfo(state);
+}
+
+function drawDebugInfo(state) {
+    const panelW = 200;
+    const x = 10, y = 10;
+    noStroke();
+    fill(0, 0, 0, 120);
+    rect(x - 6, y - 6, panelW, 120, 6);
+    fill(255);
+    textAlign(LEFT, TOP);
+    textSize(10);
+    const lines = [
+        `canvas: ${canvasWidth} x ${canvasHeight}`,
+        `margins L/R/T/B: ${MARGIN_LEFT}/${MARGIN_RIGHT}/${MARGIN_TOP}/${MARGIN_BOTTOM}`,
+        `scale: ${scale.toFixed(2)} px/m`,
+        `maxX/maxY: ${maxX.toFixed(1)}/${maxY.toFixed(1)}`
+    ];
+    let dy = 0;
+    for (const line of lines) {
+        text(line, x, y + dy);
+        dy += 14;
+    }
 }
 
 function drawGrid() {
