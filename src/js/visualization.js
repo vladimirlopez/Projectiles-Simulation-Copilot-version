@@ -21,6 +21,11 @@ let trail = [];
 let maxTrailLength = 100;
 let debugOverlay = false;
 let containerResizeObserver = null;
+let hudState = {
+    collapsed: { horizontal: false, vertical: false, results: false },
+    headers: { horizontal: null, vertical: null, results: null },
+    panel: { x: 0, y: 0, w: 0, h: 0 }
+};
 
 function computeCanvasSize(container) {
     let w = container.offsetWidth || 800;
@@ -124,6 +129,9 @@ function setup() {
         });
         containerResizeObserver.observe(container);
     }
+
+    // Initial HUD auto-collapse based on size
+    autoCollapseHUD();
 }
 
 function draw() {
@@ -430,24 +438,33 @@ function drawHUD(state) {
     const panelY = 10;
     const uiScale = Math.max(0.85, Math.min(1.15, canvasWidth / 900));
 
-    // Measure content height (no drawing)
+    // Measure content height (no drawing), honoring collapsed sections
     let measureY = 12;
     measureY += Math.floor(22 * uiScale); // title
     measureY += Math.floor(18 * uiScale); // time
-    measureY += Math.floor(16 * uiScale); // horizontal header
-    measureY += Math.floor(14 * uiScale); // v0x
-    measureY += Math.floor(14 * uiScale); // ax
-    measureY += Math.floor(14 * uiScale); // x
-    measureY += Math.floor(20 * uiScale); // vx spacer
-    measureY += Math.floor(16 * uiScale); // vertical header
-    measureY += Math.floor(14 * uiScale); // v0y
-    measureY += Math.floor(14 * uiScale); // ay
-    measureY += Math.floor(14 * uiScale); // y
-    measureY += Math.floor(20 * uiScale); // vy spacer
-    measureY += Math.floor(16 * uiScale); // results header
-    measureY += Math.floor(14 * uiScale); // time of flight
-    measureY += Math.floor(14 * uiScale); // max height
-    measureY += Math.floor(14 * uiScale); // range
+    // Horizontal header
+    measureY += Math.floor(16 * uiScale);
+    if (!hudState.collapsed.horizontal) {
+        measureY += Math.floor(14 * uiScale); // v0x
+        measureY += Math.floor(14 * uiScale); // ax
+        measureY += Math.floor(14 * uiScale); // x
+        measureY += Math.floor(20 * uiScale); // vx spacer
+    }
+    // Vertical header
+    measureY += Math.floor(16 * uiScale);
+    if (!hudState.collapsed.vertical) {
+        measureY += Math.floor(14 * uiScale); // v0y
+        measureY += Math.floor(14 * uiScale); // ay
+        measureY += Math.floor(14 * uiScale); // y
+        measureY += Math.floor(20 * uiScale); // vy spacer
+    }
+    // Results header
+    measureY += Math.floor(16 * uiScale);
+    if (!hudState.collapsed.results) {
+        measureY += Math.floor(14 * uiScale); // time of flight
+        measureY += Math.floor(14 * uiScale); // max height
+        measureY += Math.floor(14 * uiScale); // range
+    }
     const panelHeight = Math.min(canvasHeight - 20, measureY + 8);
 
     // Draw background first
@@ -481,71 +498,127 @@ function drawHUD(state) {
     // Horizontal column
     textSize(11 * uiScale);
     fill(0, 188, 212);
-    text('🔵 Horizontal (x)', leftCol, y);
-    y += Math.floor(16 * uiScale);
+    const hHeader = Math.floor(16 * uiScale);
+    const hLabel = (hudState.collapsed.horizontal ? '▶' : '▼') + ' 🔵 Horizontal (x)';
+    text(hLabel, leftCol, y);
+    hudState.headers.horizontal = { x: leftCol, y, w: panelWidth - 20, h: hHeader };
+    y += hHeader;
 
-    textSize(9 * uiScale);
-    fill(176, 176, 176);
     const results = state.results || {};
-    const v0x = results.v0x || 0;
-    text(`v₀ₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
-    y += Math.floor(14 * uiScale);
-    text(`aₓ: 0 m/s²`, leftCol, y);
-    y += Math.floor(14 * uiScale);
-
     const trajectory = state.trajectory || [];
     const current = trajectory.length > 0 ? trajectory[trajectory.length - 1] : { x: 0, y: 0 };
-    fill(255, 215, 0);
-    text(`x: ${current.x.toFixed(2)} m`, leftCol, y);
-    y += Math.floor(14 * uiScale);
-    text(`vₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
-    y += Math.floor(20 * uiScale);
+    if (!hudState.collapsed.horizontal) {
+        textSize(9 * uiScale);
+        fill(176, 176, 176);
+        const v0x = results.v0x || 0;
+        text(`v₀ₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
+        y += Math.floor(14 * uiScale);
+        text(`aₓ: 0 m/s²`, leftCol, y);
+        y += Math.floor(14 * uiScale);
+        
+        fill(255, 215, 0);
+        text(`x: ${current.x.toFixed(2)} m`, leftCol, y);
+        y += Math.floor(14 * uiScale);
+        text(`vₓ: ${v0x.toFixed(2)} m/s`, leftCol, y);
+        y += Math.floor(20 * uiScale);
+    }
 
     // Vertical column
     textSize(11 * uiScale);
     fill(255, 107, 107);
-    text('🔴 Vertical (y)', leftCol, y);
-    y += Math.floor(16 * uiScale);
+    const vHeader = Math.floor(16 * uiScale);
+    const vLabel = (hudState.collapsed.vertical ? '▶' : '▼') + ' 🔴 Vertical (y)';
+    text(vLabel, leftCol, y);
+    hudState.headers.vertical = { x: leftCol, y, w: panelWidth - 20, h: vHeader };
+    y += vHeader;
 
-    textSize(9 * uiScale);
-    fill(176, 176, 176);
-    const v0y = results.v0y || 0;
-    const g = state.parameters.g || 9.8;
-    text(`v₀ᵧ: ${v0y.toFixed(2)} m/s`, leftCol, y);
-    y += Math.floor(14 * uiScale);
-    text(`aᵧ: -${g.toFixed(1)} m/s²`, leftCol, y);
-    y += Math.floor(14 * uiScale);
-
-    fill(255, 215, 0);
-    text(`y: ${current.y.toFixed(2)} m`, leftCol, y);
-    y += Math.floor(14 * uiScale);
-    const vy = v0y - g * state.currentTime;
-    text(`vᵧ: ${vy.toFixed(2)} m/s`, leftCol, y);
-    y += Math.floor(20 * uiScale);
+    if (!hudState.collapsed.vertical) {
+        textSize(9 * uiScale);
+        fill(176, 176, 176);
+        const v0y = results.v0y || 0;
+        const g = state.parameters.g || 9.8;
+        text(`v₀ᵧ: ${v0y.toFixed(2)} m/s`, leftCol, y);
+        y += Math.floor(14 * uiScale);
+        text(`aᵧ: -${g.toFixed(1)} m/s²`, leftCol, y);
+        y += Math.floor(14 * uiScale);
+        
+        fill(255, 215, 0);
+        text(`y: ${current.y.toFixed(2)} m`, leftCol, y);
+        y += Math.floor(14 * uiScale);
+        const vy = v0y - g * state.currentTime;
+        text(`vᵧ: ${vy.toFixed(2)} m/s`, leftCol, y);
+        y += Math.floor(20 * uiScale);
+    }
 
     // Results section
     textSize(11 * uiScale);
     fill(0, 188, 212);
-    text('📋 Results', leftCol, y);
-    y += Math.floor(16 * uiScale);
+    const rHeader = Math.floor(16 * uiScale);
+    const rLabel = (hudState.collapsed.results ? '▶' : '▼') + ' 📋 Results';
+    text(rLabel, leftCol, y);
+    hudState.headers.results = { x: leftCol, y, w: panelWidth - 20, h: rHeader };
+    y += rHeader;
 
-    textSize(9 * uiScale);
-    fill(176, 176, 176);
-    text('Time of Flight:', leftCol, y);
-    fill(224, 224, 224);
-    text(results.timeOfFlight ? `${results.timeOfFlight.toFixed(2)} s` : '—', rightCol, y);
-    y += Math.floor(14 * uiScale);
+    if (!hudState.collapsed.results) {
+        textSize(9 * uiScale);
+        fill(176, 176, 176);
+        text('Time of Flight:', leftCol, y);
+        fill(224, 224, 224);
+        text(results.timeOfFlight ? `${results.timeOfFlight.toFixed(2)} s` : '—', rightCol, y);
+        y += Math.floor(14 * uiScale);
+        
+        fill(176, 176, 176);
+        text('Max Height:', leftCol, y);
+        fill(224, 224, 224);
+        text(results.maxHeight ? `${results.maxHeight.toFixed(2)} m` : '—', rightCol, y);
+        y += Math.floor(14 * uiScale);
+        
+        fill(176, 176, 176);
+        text('Range:', leftCol, y);
+        fill(224, 224, 224);
+        text(results.range ? `${results.range.toFixed(2)} m` : '—', rightCol, y);
+    }
 
-    fill(176, 176, 176);
-    text('Max Height:', leftCol, y);
-    fill(224, 224, 224);
-    text(results.maxHeight ? `${results.maxHeight.toFixed(2)} m` : '—', rightCol, y);
-    y += Math.floor(14 * uiScale);
+    // Save panel box for click detection
+    hudState.panel = { x: panelX, y: panelY, w: panelWidth, h: panelHeight };
+}
 
-    fill(176, 176, 176);
-    text('Range:', leftCol, y);
-    fill(224, 224, 224);
-    text(results.range ? `${results.range.toFixed(2)} m` : '—', rightCol, y);
+function autoCollapseHUD() {
+    // Collapse sections on small canvases
+    const panelWidth = Math.max(160, Math.min(320, Math.floor((canvasWidth || 800) * 0.26)));
+    const small = (canvasWidth || 800) < 560 || panelWidth <= 200;
+    if (small) {
+        hudState.collapsed.horizontal = true;
+        hudState.collapsed.vertical = true;
+        hudState.collapsed.results = false;
+    } else {
+        hudState.collapsed.horizontal = false;
+        hudState.collapsed.vertical = false;
+        hudState.collapsed.results = false;
+    }
+}
+
+function mousePressed() {
+    // Toggle HUD sections when clicking headers
+    const mx = mouseX, my = mouseY;
+    const panel = hudState.panel;
+    if (!panel) return;
+    if (mx < panel.x || mx > panel.x + panel.w || my < panel.y || my > panel.y + panel.h) return;
+    const hH = hudState.headers.horizontal;
+    const hV = hudState.headers.vertical;
+    const hR = hudState.headers.results;
+    if (hH && mx >= hH.x && mx <= hH.x + hH.w && my >= hH.y && my <= hH.y + hH.h) {
+        hudState.collapsed.horizontal = !hudState.collapsed.horizontal;
+        return;
+    }
+    if (hV && mx >= hV.x && mx <= hV.x + hV.w && my >= hV.y && my <= hV.y + hV.h) {
+        hudState.collapsed.vertical = !hudState.collapsed.vertical;
+        return;
+    }
+    if (hR && mx >= hR.x && mx <= hR.x + hR.w && my >= hR.y && my <= hR.y + hR.h) {
+        hudState.collapsed.results = !hudState.collapsed.results;
+        return;
+    }
 }
 
 function windowResized() {
@@ -560,4 +633,5 @@ function windowResized() {
         origin.y = canvasHeight - MARGIN_BOTTOM;
         updateScale();
     }
+    autoCollapseHUD();
 }
